@@ -21,6 +21,9 @@ set -e
 # Uncomment for verbose output
 # set -x 
 
+# Automatize the process
+BENCHMARK=$1
+
 CWD=`pwd`
 echo "Current working directory: $CWD"
 
@@ -70,7 +73,7 @@ cd $CWD
 # stderr files. User must generate this before starting the injection campaign.
 ###############################################################################
 printf "\nStep 0 (4): Run and collect output without instrumentation\n"
-cd test-apps/simple_add/
+cd test-apps/${BENCHMARK}/
 make 2> stderr.txt
 make golden
 cd $CWD
