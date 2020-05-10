@@ -31,8 +31,8 @@ PYTHON_P = "python"
 TIMEOUT_THRESHOLD = 10 # 10X usual runtime 
 
 if 'NVBITFI_HOME' not in os.environ:
-	print ("Error: Please set NVBITFI_HOME environment variable")
-	sys.exit(-1)
+    print ("Error: Please set NVBITFI_HOME environment variable")
+    sys.exit(-1)
 NVBITFI_HOME = os.environ['NVBITFI_HOME']
 
 # verbose = True
@@ -177,13 +177,15 @@ CAT_STR = ["Masked: Error was never read", "Masked: Write before read",
 # Used for instruction output-level value injection runs 
 # G_GPPR and G_GP should be equivalent because we do not inject into predicate regiters in this release. 
 inst_value_igid_bfm_map = {
-	G_GP: [FLIP_SINGLE_BIT]
+   G_GP:   [FLIP_SINGLE_BIT],
+   G_FP32: [FLIP_SINGLE_BIT],
+   G_LD:   [FLIP_SINGLE_BIT]
 
 #  Supported models
-# 	G_GP: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
-# 	G_FP64: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
-# 	G_FP32: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
-# 	G_LD: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE] 
+#   G_GP: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
+#   G_FP64: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
+#   G_FP32: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
+#   G_LD: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE] 
 
 }
 
@@ -191,23 +193,31 @@ inst_value_igid_bfm_map = {
 #########################################################################
 # List of apps 
 # app_name: [
-#			workload directory, 
-#			binary name, 
-#			path to the binary file, 
-#			expected runtime in secs on the target PC, 
-#			additional parameters to pass to run.sh script (usually this should be "")
-#		]
+#           workload directory, 
+#           binary name, 
+#           path to the binary file, 
+#           expected runtime in secs on the target PC, 
+#           additional parameters to pass to run.sh script (usually this should be "")
+#       ]
 # run.sh script should be in the workload directory
 # golden output files should also be in the workload directory
 #########################################################################
 apps = {
-	'simple_add': [
-			NVBITFI_HOME + '/test-apps/simple_add', # workload directory
-			'simple_add', # binary name
-			NVBITFI_HOME + '/test-apps/simple_add/', # path to the binary file
-			1, # expected runtime
-			"" # additional parameters to the run.sh
-		],
+    # ~ 'simple_add': [
+            # ~ NVBITFI_HOME + '/test-apps/simple_add', # workload directory
+            # ~ 'simple_add', # binary name
+            # ~ NVBITFI_HOME + '/test-apps/simple_add/', # path to the binary file
+            # ~ 1, # expected runtime
+            # ~ "" # additional parameters to the run.sh
+        # ~ ],
+        
+    'lava_mp': [
+            NVBITFI_HOME + '/test-apps/lava_mp', # workload directory
+            'lava_mp', # binary name
+            NVBITFI_HOME + '/test-apps/lava_mp/', # path to the binary file
+            1, # expected runtime
+            "" # additional parameters to the run.sh
+        ],
 }
 
 #########################################################################
@@ -226,15 +236,15 @@ bin_dir = {}
 app_dir = {}
 app_data_dir = {}
 def set_paths(): 
-	merged_apps = apps # merge the two dictionaries 
-	merged_apps.update(parse_apps) 
-	
-	for app in merged_apps:
-		app_log_dir[app] = NVBITFI_HOME + "/logs/" + app + "/"
-		bin_dir[app] = merged_apps[app][2]
-		app_dir[app] = merged_apps[app][0]
-		script_dir[app] = merged_apps[app][0]
-		app_data_dir[app] = merged_apps[app][0]
+    merged_apps = apps # merge the two dictionaries 
+    merged_apps.update(parse_apps) 
+    
+    for app in merged_apps:
+        app_log_dir[app] = NVBITFI_HOME + "/logs/" + app + "/"
+        bin_dir[app] = merged_apps[app][2]
+        app_dir[app] = merged_apps[app][0]
+        script_dir[app] = merged_apps[app][0]
+        app_data_dir[app] = merged_apps[app][0]
 
 set_paths()
 
