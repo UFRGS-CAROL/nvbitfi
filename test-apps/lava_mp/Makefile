@@ -90,6 +90,7 @@ golden:
 				sed -i '/LOGFILENAME/c\' golden_stdout.txt 
 				sed -i '/time/c\' golden_stdout.txt 
 				sed -i '/TESTE/c\' golden_stdout.txt 
+				sed -i '/========/c\' golden_stdout.txt
 
 
 clobber: clean
