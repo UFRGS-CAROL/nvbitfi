@@ -25,6 +25,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os, sys
+import fast_parameters as fp
 
 PYTHON_P = "python"
 
@@ -68,9 +69,8 @@ NUM_INJECTIONS = 1000
 # Only the first THRESHOLD_JOBS will be selected from the generated NUM_INJECTIONS.
 #
 # THRESHOLD_JOBS = 384
-THRESHOLD_JOBS = 1000
-# THRESHOLD_JOBS = 1
-THRESHOLD_JOBS = 10
+#THRESHOLD_JOBS = 1000
+THRESHOLD_JOBS = 1
 
 # THRESHOLD_JOBS sould be <= NUM_INJECTIONS
 assert THRESHOLD_JOBS <= NUM_INJECTIONS
@@ -202,23 +202,7 @@ inst_value_igid_bfm_map = {
 # run.sh script should be in the workload directory
 # golden output files should also be in the workload directory
 #########################################################################
-apps = {
-    # ~ 'simple_add': [
-            # ~ NVBITFI_HOME + '/test-apps/simple_add', # workload directory
-            # ~ 'simple_add', # binary name
-            # ~ NVBITFI_HOME + '/test-apps/simple_add/', # path to the binary file
-            # ~ 1, # expected runtime
-            # ~ "" # additional parameters to the run.sh
-        # ~ ],
-        
-    'lava_mp': [
-            NVBITFI_HOME + '/test-apps/lava_mp', # workload directory
-            'lava_mp', # binary name
-            NVBITFI_HOME + '/test-apps/lava_mp/', # path to the binary file
-            1, # expected runtime
-            "" # additional parameters to the run.sh
-        ],
-}
+apps = fp.apps
 
 #########################################################################
 # Separate list of apps and error models for parsing because one may want to

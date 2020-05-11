@@ -127,4 +127,8 @@ golden:
                         --input_c $(DIR)/c_$(OUTPUTPREFIX) \
                         --gold  $(DIR)/g_$(OUTPUTPREFIX)       \
                         --opnum $(CHECKBLOCK) $(USECUBLAS) $(USETENSORS) > golden_stdout.txt 2>golden_stderr.txt
+						sed -i '/LOGFILENAME/c\' golden_stdout.txt 
+						sed -i '/Time/c\' golden_stdout.txt 
+						sed -i '/time/c\' golden_stdout.txt 
+						sed -i '/^$$/d' golden_stdout.txt
 

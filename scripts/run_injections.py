@@ -159,13 +159,13 @@ def run_multiple_injections_igid(app, inj_mode, igid, where_to_run):
 ###############################################################################
 def check_sdc_fernando(app, kname, kcount, igid, bfm, iid, opid, bid, inj_type):
     #########################################################
-    with open(p.NVBITFI_HOME + "logs_sdcs_" + str(app) + "_" + str(inj_type) + ".csv", "a") as fault_model:
+    with open(p.NVBITFI_HOME + "/logs_sdcs_" + str(app) + "_" + str(inj_type) + ".csv", "a") as fault_model:
         proc = subprocess.Popen("ls -Art /var/radiation-benchmarks/log/ | tail -n 1", stdout=subprocess.PIPE,
                                 shell=True)
         (out, err) = proc.communicate()
         # Kernel=%s, kcount=%s, igid=%s, bfm=%s, instID=%s, opID=%s, bitLocation=%s
         output_list = [out.rstrip(), kname, kcount, igid, bfm, iid, opid, bid]
-        fault_model.write(",".join(str(i) for i in output_list) + "\n")
+        fault_model.write(";".join(str(i) for i in output_list) + "\n")
 
 
 ###############################################################################
