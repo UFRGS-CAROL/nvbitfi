@@ -5,6 +5,7 @@ from os import environ
 
 benchmark = environ['BENCHMARK']
 NVBITFI_HOME = environ['NVBITFI_HOME']
+THRESHOLD_JOBS = int(environ['FAULTS'])
 
 all_apps = {
     'simple_add': [
@@ -30,6 +31,14 @@ all_apps = {
             1, # expected runtime
             "" # additional parameters to the run.sh
         ],
+        
+   'bfs': [
+        NVBITFI_HOME + '/test-apps/bfs', # workload directory
+        'cudaBFS', # binary name
+        NVBITFI_HOME + '/test-apps/bfs/', # path to the binary file
+        1, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
 }
 
 apps = {benchmark : all_apps[benchmark]}
