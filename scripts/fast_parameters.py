@@ -39,6 +39,14 @@ all_apps = {
         1, # expected runtime
         "" # additional parameters to the run.sh
     ],
+    
+    'accl': [
+        NVBITFI_HOME + '/test-apps/accl', # workload directory
+        'cudaACCL', # binary name
+        NVBITFI_HOME + '/test-apps/accl/', # path to the binary file
+        1, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
 }
 
 apps = {benchmark : all_apps[benchmark]}
