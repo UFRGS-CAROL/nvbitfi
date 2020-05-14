@@ -132,7 +132,8 @@ test:
 	
 golden:
 	./$(TARGET) test_radiation -d $(RAD_DIR)/data/darknet/fault_injection.csv -n 1 -s 0 -a 0 > golden_stdout.txt 2>golden_stderr.txt
-	sed -i '/Iteration 0 - image/c\REPLACED.' golden_stdout.txt 
+	sed -i '/Iteration 0 - image/c\' golden_stdout.txt 
+	sed -i '/^$$/d' golden_stdout.txt
 
 
 generate:
