@@ -47,6 +47,30 @@ all_apps = {
         1, # expected runtime
         "" # additional parameters to the run.sh
     ],
+    
+    'mergesort': [
+        NVBITFI_HOME + '/test-apps/mergesort', # workload directory
+        'mergesort', # binary name
+        NVBITFI_HOME + '/test-apps/mergesort/', # path to the binary file
+        1, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
+    
+    'quicksort': [
+        NVBITFI_HOME + '/test-apps/quicksort', # workload directory
+        'quicksort', # binary name
+        NVBITFI_HOME + '/test-apps/quicksort/', # path to the binary file
+        2, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
+    
+    'hotspot': [
+        NVBITFI_HOME + '/test-apps/hotspot', # workload directory
+        'hotspot', # binary name
+        NVBITFI_HOME + '/test-apps/hotspot/', # path to the binary file
+        2, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
 }
 
 apps = {benchmark : all_apps[benchmark]}
