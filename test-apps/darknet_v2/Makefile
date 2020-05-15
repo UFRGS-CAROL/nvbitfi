@@ -5,11 +5,12 @@ DEBUG=0
 
 #for radiation setup
 LOGS=1
-GEN_IMG?=0 #if you want to generate images on gold generator execution
+#if you want to generate images on gold generator execution
+GEN_IMG?=0
 TARGET=darknet_v2
 
-ARCH= -gencode arch=compute_35,code=sm_35
-#      -gencode arch=compute_50,code=[sm_50,compute_50] \
+ARCH= -gencode arch=compute_35,code=sm_35 \
+#	  -gencode arch=compute_30,code=[sm_30,compute_30] 
 #      -gencode arch=compute_52,code=[sm_52,compute_52] \
 #      -gencode arch=compute_60,code=[sm_60,compute_60] \
 #      -gencode arch=compute_62,code=[sm_62,compute_62]
@@ -27,7 +28,7 @@ NVCC=$(CUDA_BASE_DIR)/bin/nvcc
 CC=gcc-7
 CXX=g++-7
 OPTS=-O3
-LDFLAGS= -lm -pthread 
+LDFLAGS= -lm -pthread
 COMMON= 
 CFLAGS= 
 
@@ -69,6 +70,7 @@ coco.o dice.o yolo.o detector.o layer.o compare.o regressor.o classifier.o local
 swag.o shortcut_layer.o activation_layer.o rnn_layer.o gru_layer.o rnn.o rnn_vid.o \
 crnn_layer.o demo.o tag.o cifar.o go.o batchnorm_layer.o art.o region_layer.o reorg_layer.o \
 lsd.o super.o voxel.o tree.o args.o log_processing.o abft_host.o
+
 ifeq ($(GPU), 1) 
 LDFLAGS+= -lstdc++ 
 OBJ+=convolutional_kernels.o deconvolutional_kernels.o activation_kernels.o \
@@ -85,22 +87,17 @@ endif
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
 DEPS = $(wildcard src/*.h) Makefile
 
-############################################################################################
-#-------------------------------------------------------------------------------------------
-#-rdc=true
 NVCC_FLAGS += -ccbin $(CXX) -Xptxas -v -I$(CUDA_BASE_DIR)/include/ $(ARCH)
 
-LINK_FLAGS =  -L$(CUDA_LIB_DIR) -lcudart -lcudadevrt -lcuda -lcudart -lcublas -lcurand
+LINK_FLAGS = -L$(CUDA_BASE_DIR)/lib64 -lcudart -lcudadevrt -lcuda -lcudart -lcublas -lcurand 
 
 ALL_FLAGS=$(NVCC_FLAGS) $(LINK_FLAGS)
 
-#-------------------------------------------------------------------------------------------
-############################################################################################
-
 all: clean obj backup results $(TARGET)
+#$(NVCC_FLAGS) 
 
 $(TARGET): $(OBJS)
-	$(NVCC) $^ $(NVCC_FLAGS) $(LOGHELPERLIB) $(LOGHELPERINC) $(LINK_FLAGS) -o $@  -lstdc++ 
+	$(CC) $^ $(LOGHELPERLIB) $(LOGHELPERINC) $(LINK_FLAGS) -o $@ $(LDFLAGS) 
 
 $(OBJDIR)%.o: %.c $(DEPS)
 	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@  $(HELPFUL) $(LOGHELPERLIB) $(LOGHELPERINC) $(LDFLAGS)
@@ -125,6 +122,7 @@ clean:
 	rm -rf $(OBJS) $(TARGET)
 
 test_pure_yolo:
+	#eval LD_PRELOAD=/home/carol/NVBITFI/nvbit_release/tools/nvbitfi/profiler/profiler.so 
 	./$(TARGET) detect cfg/yolo.cfg $(RAD_DIR)/data/darknet/yolo_v2.weights data/dog.jpg
 	
 test:
