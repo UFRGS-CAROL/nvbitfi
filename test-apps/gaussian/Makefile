@@ -72,3 +72,4 @@ golden:
 	./$(EXEC) --size $(SIZE) --input $(DIR)/input_$(SIZE).data --gold $(DIR)/gold_$(SIZE).data --verbose --iterations 1 > golden_stdout.txt 2>golden_stderr.txt
 	sed -i '/time/c\' golden_stdout.txt 
 	sed -i '/LOGFILENAME/c\' golden_stdout.txt
+	sed -i '/^$$/d' golden_stdout.txt

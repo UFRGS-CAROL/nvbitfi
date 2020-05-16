@@ -71,6 +71,23 @@ all_apps = {
         2, # expected runtime
         "" # additional parameters to the run.sh
     ],
+    
+    'darknet_v2': [
+        NVBITFI_HOME + '/test-apps/darknet_v2', # workload directory
+        'darknet_v2', # binary name
+        NVBITFI_HOME + '/test-apps/darknet_v2/', # path to the binary file
+        5, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
+    
+    
+    'gaussian': [
+        NVBITFI_HOME + '/test-apps/gaussian', # workload directory
+        'cudaGaussian', # binary name
+        NVBITFI_HOME + '/test-apps/gaussian/', # path to the binary file
+        1, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
 }
 
 apps = {benchmark : all_apps[benchmark]}
