@@ -88,6 +88,14 @@ all_apps = {
         1, # expected runtime
         "" # additional parameters to the run.sh
     ],
+    
+    'lud': [
+        NVBITFI_HOME + '/test-apps/lud', # workload directory
+        'cudaLUD', # binary name
+        NVBITFI_HOME + '/test-apps/lud/', # path to the binary file
+        1, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
 }
 
 apps = {benchmark : all_apps[benchmark]}
