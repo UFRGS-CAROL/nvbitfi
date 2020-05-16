@@ -10,4 +10,4 @@ eval ${PRELOAD_FLAG}  ${BIN_DIR}/nw ${SIZE} 10 ${DATA}/input_${SIZE} ${DATA}/gol
 sed -i '/kernel time/c\REPLACED.' stdout.txt 
 sed -i '/LOGFILE/c\REPLACED.' stdout.txt 
 sed -i '/read../c\REPLACED.' stdout.txt 
-
+sed -i '/^$/d' stdout.txt

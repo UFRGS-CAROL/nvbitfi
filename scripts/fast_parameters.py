@@ -96,6 +96,14 @@ all_apps = {
         1, # expected runtime
         "" # additional parameters to the run.sh
     ],
+    
+    'nw': [
+        NVBITFI_HOME + '/test-apps/nw', # workload directory
+        'nw', # binary name
+        NVBITFI_HOME + '/test-apps/nw/', # path to the binary file
+        2, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
 }
 
 apps = {benchmark : all_apps[benchmark]}

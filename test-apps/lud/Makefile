@@ -14,7 +14,7 @@ NVCC=$(CUDAPATH)/bin/nvcc
 
 RADDIR=/home/carol/radiation-benchmarks
 
-NVCCFLAGS= -Xptxas -v -rdc=true --compiler-options "$(CXXFLAGS)" 
+NVCCFLAGS= -Xptxas -v --compiler-options "$(CXXFLAGS)" 
 
 
 ARCH= -gencode arch=compute_35,code=[sm_35,compute_35] #Kepler
@@ -48,7 +48,7 @@ all: clean mkdir $(EXEC)
 
 
 $(EXEC): $(OBJS)  
-	$(NVCC) $(ARCH) $(COMMON) $^ -o $@ $(NVCCFLAGS) $(LDFLAGS) $(INCLUDE)
+	$(CXX) $(COMMON) $^ -o $@ $(CXXFLAGS) $(LDFLAGS) $(INCLUDE)
 
 $(OBJDIR)%.o: %.cpp $(DEPS)
 	$(CXX) $(COMMON) $(CXXFLAGS) -c $< -o $@ $(INCLUDE)

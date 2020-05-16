@@ -82,3 +82,4 @@ golden:
 	sed -i '/kernel time/c\REPLACED.' golden_stdout.txt 
 	sed -i '/LOGFILE/c\REPLACED.' golden_stdout.txt 
 	sed -i '/read../c\REPLACED.' golden_stdout.txt 
+	sed -i '/^$$/d' golden_stdout.txt
