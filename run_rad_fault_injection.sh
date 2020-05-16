@@ -4,7 +4,7 @@
 set -e
 
 #lava_mp gemm_tensorcores bfs accl mergesort quicksort hotspot darknet_v2 darknet_v3 gaussian lud nw
-for i in gaussian; 
+for i in lud; 
 do
     echo "###############################################################"
     echo "                     DOING FOR $i"
