@@ -4,7 +4,7 @@ TARGET = simple_add
 NVCC = `which nvcc`
 ARCH=35
 
-all: clean $(TARGET) 
+all: $(TARGET) 
 
 $(TARGET): 
 	$(NVCC) -o simple_add -Xptxas -v -arch=sm_$(ARCH) simple_add.cu 

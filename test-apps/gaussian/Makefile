@@ -44,7 +44,7 @@ DEPS = $(wildcard src/*.h) Makefile
 DIR=$(RADDIR)/data/gaussian
 
 
-all: clean mkdir $(EXEC)
+all:  mkdir $(EXEC)
 
 $(EXEC): $(OBJS)  
 	$(CXX) $(COMMON) $^ -o $@ $(CXXFLAGS) $(LDFLAGS) $(INCLUDE)

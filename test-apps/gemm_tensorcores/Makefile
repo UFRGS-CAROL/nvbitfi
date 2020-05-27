@@ -73,7 +73,7 @@ DEPS = $(wildcard src/*.h) Makefile
 
 NVCCFLAGS+= -Xptxas -v -rdc=true
 
-all: clean obj $(TARGET)
+all: obj $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(NVCC) $(ARCH) $(COMMON) --compiler-options "$(CFLAGS)" $^ $(INCLUDE) -o $@  $(LDFLAGS)   $(EXTRA_NVCC_FLAGS) $(EXTRA_LINK_FLAGS)

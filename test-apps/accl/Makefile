@@ -47,7 +47,7 @@ GPUOBJS = $(addprefix $(OBJDIR), $(GPUOBJ))
 DEPS = $(wildcard src/*.h) Makefile
 
 
-all: clean mkdir $(EXEC)
+all: mkdir $(EXEC)
 
 $(EXEC): $(OBJS)  
 	$(CXX)  $(CXXFLAGS) $(GPUOBJS) $^ -o $@ $(LDFLAGS) $(INCLUDE) 

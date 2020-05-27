@@ -44,7 +44,7 @@ DEPS = $(wildcard src/*.h) Makefile
 
 DATA=$(RADDIR)/data/lud
 
-all: clean mkdir $(EXEC)
+all: mkdir $(EXEC)
 
 
 $(EXEC): $(OBJS)  

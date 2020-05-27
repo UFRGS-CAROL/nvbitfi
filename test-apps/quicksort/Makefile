@@ -19,7 +19,7 @@ CXX=g++-7
 NVCC_FLAGS = -ccbin $(CXX) $(LOGHELPER_LIB) -lLogHelper -Xptxas -v -I$(CUDA_BASE_DIR)/include/ -Xcompiler " -fopenmp" -rdc=true
 LINK_FLAGS = -L$(CUDA_BASE_DIR)/lib64 -std=c++11 $(GENCODE) -lcudart -lcudadevrt 
 
-all: clean $(TARGET)
+all: $(TARGET)
 
 $(TARGET):
 	$(NVCC) -o $(TARGET) cdpAdvancedQuicksort.cu cdpBitonicSort.cu  $(NVCC_FLAGS) $(LINK_FLAGS)

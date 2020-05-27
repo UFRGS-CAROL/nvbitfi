@@ -42,7 +42,7 @@ OBJS = $(addprefix $(OBJDIR), $(OBJ))
 DEPS = $(wildcard src/*.h) Makefile
 
 
-all: clean mkdir $(EXEC)
+all: mkdir $(EXEC)
 
 $(EXEC): $(OBJS)  
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) $(INCLUDE) $(EXTRA_LINK_FLAGS)

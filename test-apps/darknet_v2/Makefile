@@ -93,7 +93,7 @@ LINK_FLAGS = -L$(CUDA_BASE_DIR)/lib64 -lcudart -lcudadevrt -lcuda -lcudart -lcub
 
 ALL_FLAGS=$(NVCC_FLAGS) $(LINK_FLAGS)
 
-all: clean obj backup results $(TARGET)
+all: obj backup results $(TARGET)
 #$(NVCC_FLAGS) 
 
 $(TARGET): $(OBJS)

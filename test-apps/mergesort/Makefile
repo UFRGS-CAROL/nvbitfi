@@ -16,7 +16,7 @@ NVCC_FLAGS += -Xcompiler " -fopenmp" -Xcompiler "-O3" -ccbin $(CXX)
 NVCC_FLAGS += -I$(CUDA_BASE_DIR)/samples/common/inc
 LINK_FLAGS = -std=c++11 $(GENCODE) -lcudart -lcudadevrt
 
-all: clean $(TARGET)
+all: $(TARGET)
 
 $(TARGET):
 	$(NVCC) -o mergesort bitonic.cu main.cpp mergeSort.cu mergeSort_host.cpp mergeSort_validate.cpp  $(NVCC_FLAGS) -L$(CUDA_LIB_DIR) $(LINK_FLAGS)

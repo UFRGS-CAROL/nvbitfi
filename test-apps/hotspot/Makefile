@@ -21,7 +21,7 @@ INPUTTEMP=$(RAD)/data/hotspot/temp_1024
 INPUTPOWER=$(RAD)/data/hotspot/power_1024
 GOLD=$(RAD)/data/hotspot/gold_1024_1
 
-all: clean $(TARGET)
+all: $(TARGET)
 
 $(TARGET):
 	$(NVCC) -o hotspot cuda_hotspot.cu $(NVCC_FLAGS) -L$(CUDA_LIB_DIR) $(LINK_FLAGS)
