@@ -3,7 +3,17 @@
 # stop after first error
 set -e
 
-#lava_mp gemm_tensorcores bfs accl mergesort quicksort hotspot darknet_v2 darknet_v3 gaussian lud nw
+# it still missing darknet_v2 darknet_v3 py_faster_rcnn resnet_torch gemm_tensorcores
+benchmarks=( lava_mp gemm_tensorcores bfs accl mergesort quicksort hotspot gaussian lud nw )
+
+for i in "${benchmarks[@]}"
+do
+    echo $i
+    make -C test-apps/${i}/ -j4
+done
+
+exit
+
 for i in gaussian lud nw; 
 do
     echo "###############################################################"

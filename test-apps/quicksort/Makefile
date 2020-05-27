@@ -11,6 +11,7 @@ CUDA_BASE_DIR=/usr/local/cuda
 NVCC=$(CUDA_BASE_DIR)/bin/nvcc
 
 GENCODE=-gencode arch=compute_35,code=[sm_35,compute_35]
+GENCODE+= -gencode arch=compute_70,code=[sm_70,compute_70] #Titan V
 
 LOGHELPER_LIB= -DLOGS -I$(RAD)/src/include -L$(RAD)/src/include -I$(RAD)/src/cuda/common
 

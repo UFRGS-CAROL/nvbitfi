@@ -25,7 +25,7 @@ NVCC=$(CUDAPATH)/bin/nvcc
 NVCCFLAGS= -std=c++11 -O3 -Xptxas -v
 
 ARCH= -gencode arch=compute_35,code=[sm_35,compute_35] #Kepler
-#ARCH+= -gencode arch=compute_70,code=[sm_70,compute_70] #Titan V
+ARCH+= -gencode arch=compute_70,code=[sm_70,compute_70] #Titan V
 
 INCLUDE= -I./src -I$(CUDAPATH)/include -I$(RAD)/src/include -I$(RAD)/src/cuda/common
 
