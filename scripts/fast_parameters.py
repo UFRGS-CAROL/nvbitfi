@@ -60,7 +60,7 @@ all_apps = {
         NVBITFI_HOME + '/test-apps/quicksort', # workload directory
         'quicksort', # binary name
         NVBITFI_HOME + '/test-apps/quicksort/', # path to the binary file
-        2, # expected runtime
+        5, # expected runtime
         "" # additional parameters to the run.sh
     ],
     
