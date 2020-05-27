@@ -15,7 +15,7 @@ GENCODE+= -gencode arch=compute_70,code=[sm_70,compute_70] #Titan V
 
 LOGHELPER_LIB= -DLOGS -I$(RAD)/src/include -L$(RAD)/src/include -I$(RAD)/src/cuda/common
 
-CXX=g++-4.8
+CXX=g++-7
 NVCC_FLAGS = -ccbin $(CXX) $(LOGHELPER_LIB) -lLogHelper -Xptxas -v -I$(CUDA_BASE_DIR)/include/ -Xcompiler " -fopenmp" -rdc=true
 LINK_FLAGS = -L$(CUDA_BASE_DIR)/lib64 -std=c++11 $(GENCODE) -lcudart -lcudadevrt 
 
