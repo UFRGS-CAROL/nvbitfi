@@ -10,6 +10,8 @@ for i in "${benchmarks[@]}"
 do
     echo $i
     make -C test-apps/${i}/ -j4
+    make generate
+    make test
 done
 
 exit
