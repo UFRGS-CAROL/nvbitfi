@@ -9,7 +9,7 @@ LOGS=1
 GEN_IMG?=0
 TARGET=darknet_v2
 
-ARCH= -gencode arch=compute_35,code=sm_35 \
+ARCH= -gencode arch=compute_70,code=sm_70 \
 #	  -gencode arch=compute_30,code=[sm_30,compute_30] 
 #      -gencode arch=compute_52,code=[sm_52,compute_52] \
 #      -gencode arch=compute_60,code=[sm_60,compute_60] \
