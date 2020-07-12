@@ -1,0 +1,15 @@
+Use this size for each equivalent
+
+FLOAT ----
+16K float kernel is
+volta_sgemm_128x32_sliced1x4_nn
+
+to fault injection the same size that call this kernel is 512
+volta_sgemm_128x32_sliced1x4_nn
+
+HALF ----
+16K half kernel is
+volta_hgemm_128x128_nn
+
+to fault injection the same size kernel call is 1K
+volta_hgemm_128x128_nn
