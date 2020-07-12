@@ -28,7 +28,7 @@ all_apps = {
             NVBITFI_HOME + '/test-apps/gemm_tensorcores', # workload directory
             'gemm', # binary name
             NVBITFI_HOME + '/test-apps/gemm_tensorcores/', # path to the binary file
-            1, # expected runtime
+            2, # expected runtime
             "" # additional parameters to the run.sh
         ],
         
@@ -76,6 +76,14 @@ all_apps = {
         NVBITFI_HOME + '/test-apps/darknet_v2', # workload directory
         'darknet_v2', # binary name
         NVBITFI_HOME + '/test-apps/darknet_v2/', # path to the binary file
+        5, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
+
+    'darknet_v3': [
+        NVBITFI_HOME + '/test-apps/darknet_v3', # workload directory
+        'darknet_v3_half', # binary name
+        NVBITFI_HOME + '/test-apps/darknet_v3/', # path to the binary file
         5, # expected runtime
         "" # additional parameters to the run.sh
     ],
