@@ -6,9 +6,13 @@ OMP=1
 
 ALPHA=1.0
 BETA=0.0
-SIZE?=512
+#Fault injection uses size table
+# half cublas is 16k to 1k
+# single cublas is 16k to 512
+# double cublas is 16k to 4k
+SIZE?=4096
 ITERATIONS=1
-PRECISION=float
+PRECISION=double
 CUBLAS=1
 TENSOR_CORES=0
 DMR=none
