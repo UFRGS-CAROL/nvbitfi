@@ -28,7 +28,7 @@ all_apps = {
             NVBITFI_HOME + '/test-apps/gemm_tensorcores', # workload directory
             'gemm', # binary name
             NVBITFI_HOME + '/test-apps/gemm_tensorcores/', # path to the binary file
-            2, # expected runtime
+            5, # expected runtime
             "" # additional parameters to the run.sh
         ],
         
@@ -110,6 +110,14 @@ all_apps = {
         'nw', # binary name
         NVBITFI_HOME + '/test-apps/nw/', # path to the binary file
         2, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
+
+    'trip_hotspot': [
+        NVBITFI_HOME + '/test-apps/trip_hotspot', # workload directory
+        'trip_hotspot', # binary name
+        NVBITFI_HOME + '/test-apps/trip_hotspot/', # path to the binary file
+        3, # expected runtime
         "" # additional parameters to the run.sh
     ],
 }
