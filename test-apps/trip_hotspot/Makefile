@@ -58,7 +58,7 @@ endif
 
 NVCC_FLAGS+= -DPRECISION_$(UPPERCASED_PRECISION)
 
-TEST_SIM_TIME=10000
+TEST_SIM_TIME=100
 DATA_DIR=$(RADDIR)/data/hotspot
 DEF_INPUT_POWER=$(DATA_DIR)/power_$(DEF_SIZE)
 DEF_INPUT_TEMP=$(DATA_DIR)/temp_$(DEF_SIZE)
@@ -75,5 +75,10 @@ clean:
 generate: $(TARGET)
 	./$(TARGET) -generate -size=$(DEF_SIZE) -input_power=$(DEF_INPUT_POWER) -input_temp=$(DEF_INPUT_TEMP) -gold=$(DEF_GOLD) -sim_time=$(TEST_SIM_TIME) -verbose -iterations=1
 
-test: $(TARGET) generate
-	./$(TARGET) -size=$(DEF_SIZE) -input_power=$(DEF_INPUT_POWER) -input_temp=$(DEF_INPUT_TEMP) -gold=$(DEF_GOLD) -sim_time=$(TEST_SIM_TIME) -iterations=10 -verbose
+test: $(TARGET) 
+	./$(TARGET) -size=$(DEF_SIZE) -input_power=$(DEF_INPUT_POWER) -input_temp=$(DEF_INPUT_TEMP) -gold=$(DEF_GOLD) -sim_time=$(TEST_SIM_TIME) -iterations=1 -verbose
+
+golden: $(TARGET) 
+	./$(TARGET) -size=$(DEF_SIZE) -input_power=$(DEF_INPUT_POWER) -input_temp=$(DEF_INPUT_TEMP) -gold=$(DEF_GOLD) -sim_time=$(TEST_SIM_TIME) -iterations=1 -verbose > golden_stdout.txt 2>golden_stderr.txt
+	sed -i '/readInput time/c\' golden_stdout.txt 
+	sed -i '/Iteration/c\' golden_stdout.txt 
