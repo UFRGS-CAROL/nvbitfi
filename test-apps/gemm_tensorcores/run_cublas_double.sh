@@ -4,7 +4,7 @@ OPNUM=1
 DMR=none
 ALPHA=1.0
 BETA=0.0
-SIZE=4096
+SIZE=1024
 PRECISION=double
 DATADIR=/home/carol/radiation-benchmarks/data/gemm
 

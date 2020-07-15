@@ -1,5 +1,12 @@
 Use this size for each equivalent
 
+DOUBLE ----
+16k double kernel is
+volta_dgemm_128x64_nn
+
+to fault injection the same size that call this kernel is 4K
+volta_dgemm_128x64_nn
+
 FLOAT ----
 16K float kernel is
 volta_sgemm_128x32_sliced1x4_nn

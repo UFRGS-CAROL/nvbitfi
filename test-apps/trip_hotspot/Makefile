@@ -1,6 +1,6 @@
 CC=g++
 NVCC=/usr/local/cuda/bin/nvcc
-PRECISION?=double
+PRECISION?=half
 DEF_SIZE?=1024
 LOGS?=1
 USE_OMP?=1
