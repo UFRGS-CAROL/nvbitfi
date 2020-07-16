@@ -120,6 +120,22 @@ all_apps = {
         3, # expected runtime
         "" # additional parameters to the run.sh
     ],
+
+    'trip_mxm': [
+        NVBITFI_HOME + '/test-apps/trip_mxm', # workload directory
+        'trip_mxm', # binary name
+        NVBITFI_HOME + '/test-apps/trip_mxm/', # path to the binary file
+        3, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
+
+    'trip_lava': [
+        NVBITFI_HOME + '/test-apps/trip_lava', # workload directory
+        'trip_lava', # binary name
+        NVBITFI_HOME + '/test-apps/trip_lava/', # path to the binary file
+        3, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
 }
 
 apps = {benchmark : all_apps[benchmark]}

@@ -1,7 +1,7 @@
 CC=g++
 NVCC=/usr/local/cuda/bin/nvcc
 
-PRECISION=single
+PRECISION=half
 DEF_SIZE=256
 
 LOWERCASED_PRECISION=$(shell echo $(PRECISION) | tr A-Z a-z)
