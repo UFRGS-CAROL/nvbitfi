@@ -178,7 +178,7 @@ test:
 			-generate 0 -gold $(RADIATIONDIR)/data/darknet/test_$(REAL_TYPE).csv -iterations 1 -norm_coord 0 -tensor_cores 0 -smx_redundancy 1
 
 golden:
-	./$(EXEC) detector test_radiation cfg/coco.data $(RADIATIONDIR)/data/darknet/yolov3-spp.cfg $(RADIATIONDIR)/data/darknet/yolov3-spp.weights \
+	./$(EXEC) detector test_radiation cfg/coco.data $(RADIATIONDIR)/data/darknet/yolov3-spp.cfg $(RADIATIONDIR)data/darknet/yolov3-spp.weights \
 			$(RADIATIONDIR)/data/networks_img_list/fault_injection.txt \
 			-generate 0 -gold $(RADIATIONDIR)/data/darknet/test_$(REAL_TYPE).csv -iterations 1 -norm_coord 0 -tensor_cores 0 -smx_redundancy 1 > golden_stdout.txt 2>golden_stderr.txt
 	sed -i '/Iteration/c\' golden_stdout.txt
