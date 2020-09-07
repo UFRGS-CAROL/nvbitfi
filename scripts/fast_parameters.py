@@ -136,6 +136,14 @@ all_apps = {
         3, # expected runtime
         "" # additional parameters to the run.sh
     ],
+
+    'py_faster_rcnn': [
+        NVBITFI_HOME + '/test-apps/py_faster_rcnn', # workload directory
+        'py_faster_rcnn.py', # binary name
+        '/home/carol/radiation-benchmarks/src/cuda/py-faster-rcnn/', # path to the binary file
+        5, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
 }
 
 apps = {benchmark : all_apps[benchmark]}
