@@ -565,7 +565,9 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
 
     list *options = read_data_cfg(datacfg);
 
-    char *name_list = option_find_str(options, "names", 0);
+    //char *name_list = option_find_str(options, "names", 0);
+    char *name_list = "/home/carol/NVBITFI/nvbit_release/tools/nvbitfi/test-apps/darknet_lenet/data/mnist/mnist.names.list";
+    printf("%s at line %d in %s file\n", name_list, __LINE__,  __FILE__);
     if(!name_list) name_list = option_find_str(options, "labels", "data/labels.list");
     if(top == 0) top = option_find_int(options, "top", 1);
 
