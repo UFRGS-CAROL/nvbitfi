@@ -137,6 +137,14 @@ all_apps = {
         "" # additional parameters to the run.sh
     ],
 
+    'darknet_lenet': [
+        NVBITFI_HOME + '/test-apps/darknet_lenet', # workload directory
+        'darknet', # binary name
+        NVBITFI_HOME + '/test-apps/darknet_lenet/', # path to the binary file
+        3, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
+
     'py_faster_rcnn': [
         NVBITFI_HOME + '/test-apps/py_faster_rcnn', # workload directory
         'py_faster_rcnn.py', # binary name

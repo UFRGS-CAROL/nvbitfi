@@ -103,6 +103,8 @@ results:
 clean:
 	rm -rf $(OBJS) $(SLIB) $(ALIB) $(EXEC) $(EXECOBJ) $(OBJDIR)/*
 
+FULLDIR=/home/carol/NVBITFI/nvbit_release/tools/nvbitfi/test-apps/darknet_lenet
+
 extract:
 	tar xzf data/mnist.tar.gz -C data/
 
@@ -110,6 +112,6 @@ test:
 	./darknet classifier predict cfg/mnist.dataset cfg/mnist_lenet.cfg data/mnist_lenet.weights data/mnist/images/v_00000_c7.png
 
 golden:
-	./darknet classifier predict cfg/mnist.dataset cfg/mnist_lenet.cfg data/mnist_lenet.weights data/mnist/images/v_00000_c7.png > golden_stdout.txt 2> golden_stderr.txt
+	./darknet classifier predict $(FULLDIR)/cfg/mnist.dataset $(FULLDIR)/cfg/mnist_lenet.cfg $(FULLDIR)//data/mnist_lenet.weights $(FULLDIR)/data/mnist/images/v_00000_c7.png > golden_stdout.txt 2> golden_stderr.txt
 	sed -i '/seconds/c\' golden_stdout.txt 
 	sed -i '/seconds/c\' golden_stderr.txt 
