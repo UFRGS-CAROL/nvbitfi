@@ -41,24 +41,6 @@ bool write_file(type_t *src, std::string& path, std::string& header, int m,
 	return false;
 }
 
-void parse_entry_gpu(int TA, int TB, int M, int N, int K, float ALPHA, float *A,
-		int lda, float *B, int ldb, float BETA, float *C, int ldc) {
-	auto size_a = K * M;
-	auto size_b = K * N;
-	auto size_c = M * N;
-
-	std::vector<float> a_cpu(size_a);
-	std::vector<float> b_cpu(size_b);
-	std::vector<float> c_cpu(size_c);
-
-	cuda_pull_array(A, a_cpu.data(), size_a);
-	cuda_pull_array(B, b_cpu.data(), size_b);
-	cuda_pull_array(C, c_cpu.data(), size_c);
-
-	parse_entry_cpu(TA, TB, M, N, K, ALPHA, a_cpu.data(), lda, b_cpu.data(),
-			ldb, BETA, c_cpu.data(), ldc);
-}
-
 void save_c_matrix_gpu(int M, int N, int K, float* C) {
 	auto fault_dir = std::getenv("FAULT_LAYER_PATH");
 	std::string fault_dir_str = fault_dir ? std::string(fault_dir) : ".";
@@ -111,6 +93,25 @@ void parse_entry_cpu(int TA, int TB, int M, int N, int K, float ALPHA, float *A,
 	}
 
 }
+
+void parse_entry_gpu(int TA, int TB, int M, int N, int K, float ALPHA, float *A,
+		int lda, float *B, int ldb, float BETA, float *C, int ldc) {
+	auto size_a = K * M;
+	auto size_b = K * N;
+	auto size_c = M * N;
+
+	std::vector<float> a_cpu(size_a);
+	std::vector<float> b_cpu(size_b);
+	std::vector<float> c_cpu(size_c);
+
+	cuda_pull_array(A, a_cpu.data(), size_a);
+	cuda_pull_array(B, b_cpu.data(), size_b);
+	cuda_pull_array(C, c_cpu.data(), size_c);
+
+	parse_entry_cpu(TA, TB, M, N, K, ALPHA, a_cpu.data(), lda, b_cpu.data(),
+			ldb, BETA, c_cpu.data(), ldc);
+}
+
 
 std::vector<std::string> split(const std::string& str, char del) {
 	std::stringstream ss(str);
