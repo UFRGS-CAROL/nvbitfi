@@ -17,4 +17,4 @@ final_path=${BIN_DIR}/lenet_layers
 mkdir -p ${final_path}
 
 # Post layer movement
-tar czf ${timestamp}.tar.gz ${FAULT_LAYER_PATH}/*.csv -C ${final_path}/
+tar czf ${final_path}/${timestamp}.tar.gz ${FAULT_LAYER_PATH}/*.csv
