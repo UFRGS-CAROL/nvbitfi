@@ -18,3 +18,6 @@ mkdir -p ${final_path}
 
 # Post layer movement
 tar czf ${final_path}/${timestamp}.tar.gz ${FAULT_LAYER_PATH}/*.csv
+
+# remove trash
+rm ${FAULT_LAYER_PATH}/*.csv
