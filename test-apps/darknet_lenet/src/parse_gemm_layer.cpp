@@ -42,6 +42,8 @@ bool write_file(type_t *src, std::string& path, std::string& header, int m,
 }
 
 void save_c_matrix_gpu(int M, int N, int K, float* C) {
+	layer_count++;
+
 	auto fault_dir = std::getenv("FAULT_LAYER_PATH");
 	std::string fault_dir_str = fault_dir ? std::string(fault_dir) : ".";
 	auto path_c = fault_dir_str + "/matrix_c_layer_" + std::to_string(layer_count) + ".csv";
