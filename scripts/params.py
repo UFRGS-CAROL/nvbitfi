@@ -177,10 +177,10 @@ CAT_STR = ["Masked: Error was never read", "Masked: Write before read",
 # Used for instruction output-level value injection runs 
 # G_GPPR and G_GP should be equivalent because we do not inject into predicate regiters in this release. 
 inst_value_igid_bfm_map = {
-   G_GP:   [FLIP_SINGLE_BIT],
-   G_FP64: [FLIP_SINGLE_BIT],
+   #G_FP64: [FLIP_SINGLE_BIT],
+   #G_GP:   [FLIP_SINGLE_BIT],
    G_FP32: [FLIP_SINGLE_BIT],
-   G_LD:   [FLIP_SINGLE_BIT]
+   #G_LD:   [FLIP_SINGLE_BIT]
 
 #  Supported models
 #   G_GP: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
