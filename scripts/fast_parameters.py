@@ -104,6 +104,17 @@ all_apps = {
         2, # expected runtime
         "" # additional parameters to the run.sh
     ],
+    
+    'trip_micro': [
+        NVBITFI_HOME + '/test-apps/trip_micro', # workload directory
+        #'cuda_micro-add_single', # binary name
+        #'cuda_micro-mul_single', # binary name
+        'cuda_micro-fma_single', # binary name
+   
+        NVBITFI_HOME + '/test-apps/trip_micro/', # path to the binary file
+        20, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
 }
 
 apps = {benchmark : all_apps[benchmark]}
