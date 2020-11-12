@@ -147,7 +147,7 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 				} else {
 
 #if INJECT_RELATIVE_ERROR == 1
-					constexpr defined_fp32_relative_error = 2.0f;
+					constexpr float defined_fp32_relative_error = 2.0f;
 					switch (igid) {
 						case G_FP32: // inject into one of the dest reg
 						case G_FP64: { // inject into one of the regs written by the inst
