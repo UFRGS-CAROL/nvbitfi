@@ -46,7 +46,7 @@ std::string injInputFilename = "nvbitfi-injection-info.txt";
 
 pthread_mutex_t mutex;
 
-__managed__ inj_info_t inj_info; 
+__managed__ inj_info_t inj_info;
 
 void reset_inj_info() {
 	inj_info.areParamsReady = false;
@@ -65,24 +65,24 @@ void reset_inj_info() {
 	inj_info.pcOffset = 0;
 	inj_info.tid = -1;
 	inj_info.errorInjected = false;
-	for (int i=0; i<NUM_DEBUG_VALS; i++) {
+	for (int i = 0; i < NUM_DEBUG_VALS; i++) {
 		inj_info.debug[i] = -1;
 	}
 }
 
 void write_inj_info() {
 	assert(fout.good());
-	for (int i=0; i<NUM_INST_GROUPS; i++) {
-		fout << " grp " << i << ": " << counters[NUM_ISA_INSTRUCTIONS+i];
+	for (int i = 0; i < NUM_INST_GROUPS; i++) {
+		fout << " grp " << i << ": " << counters[NUM_ISA_INSTRUCTIONS + i];
 	}
 	fout << std::endl;
 	fout << "mask: 0x" << std::hex << inj_info.mask << std::endl;
-	fout << "beforeVal: 0x" << inj_info.beforeVal  << ";";
+	fout << "beforeVal: 0x" << inj_info.beforeVal << ";";
 	fout << "afterVal: 0x" << inj_info.afterVal << std::endl;
 	fout << "regNo: " << std::dec << inj_info.regNo << std::endl;
 	fout << "opcode: " << instTypeNames[inj_info.opcode] << std::endl;
-	fout << "pcOffset: 0x" << std::hex << inj_info.pcOffset  << std::endl;
-	fout << "tid: " << std::dec << inj_info.tid<< std::endl; 
+	fout << "pcOffset: 0x" << std::hex << inj_info.pcOffset << std::endl;
+	fout << "tid: " << std::dec << inj_info.tid << std::endl;
 }
 
 // for debugging 
@@ -90,8 +90,8 @@ void print_inj_info() {
 	assert(fout.good());
 	fout << "kernelName=" << inj_info.kernelName << std::endl;
 	fout << "kernelCount=" << inj_info.kernelCount << std::endl;
-	fout << "groupID=" << inj_info.groupID << std::endl; 
-	fout << "bitFlipModel=" << inj_info.bitFlipModel  << std::endl;
+	fout << "groupID=" << inj_info.groupID << std::endl;
+	fout << "bitFlipModel=" << inj_info.bitFlipModel << std::endl;
 	fout << "instID=" << inj_info.instID << std::endl;
 	fout << "opIDSeed=" << inj_info.opIDSeed << std::endl;
 	fout << "bitIDSeed=" << inj_info.bitIDSeed << std::endl;
@@ -102,12 +102,12 @@ void parse_params(std::string filename) {
 	static bool parse_flag = false; // file will be parsed only once - performance enhancement
 	if (!parse_flag) {
 		parse_flag = true;
-		reset_inj_info(); 
+		reset_inj_info();
 
-		std::ifstream ifs (filename.c_str(), std::ifstream::in);
+		std::ifstream ifs(filename.c_str(), std::ifstream::in);
 		if (ifs.is_open()) {
 			ifs >> inj_info.groupID; // arch state id 
-			assert(inj_info.groupID >=0 && inj_info.groupID < NUM_INST_GROUPS); // ensure that the value is in the expected range
+			assert(inj_info.groupID >= 0 && inj_info.groupID < NUM_INST_GROUPS); // ensure that the value is in the expected range
 
 			ifs >> inj_info.bitFlipModel; // fault model: single bit flip, all bit flip, random value
 			assert(inj_info.bitFlipModel < NUM_BFM_TYPES); // ensure that the value is in the expected range
@@ -117,19 +117,21 @@ void parse_params(std::string filename) {
 			ifs >> inj_info.instID; // instruction id 
 
 			ifs >> inj_info.opIDSeed; // destination id seed (float, 0-1 for inst injections and 0-256 for reg)
-			assert(inj_info.opIDSeed >=0 && inj_info.opIDSeed < 1.01); // ensure that the value is in the expected range
+			assert(inj_info.opIDSeed >= 0 && inj_info.opIDSeed < 1.01); // ensure that the value is in the expected range
 
 			ifs >> inj_info.bitIDSeed; // bit location seed (float, 0-1)
 			assert(inj_info.bitIDSeed >= 0 && inj_info.bitIDSeed < 1.01); // ensure that the value is in the expected range
 		} else {
 			printf(" File %s does not exist!", filename.c_str());
-			printf(" This file should contain enough information about the fault site to perform an error injection run: ");
-			printf("(1) arch state id, (2) bit flip model, (3) kernel name, (4) kernel count, (5) instruction id, (6) seed to select destination id, (7) sed to select bit location.\n");
+			printf(
+					" This file should contain enough information about the fault site to perform an error injection run: ");
+			printf(
+					"(1) arch state id, (2) bit flip model, (3) kernel name, (4) kernel count, (5) instruction id, (6) seed to select destination id, (7) sed to select bit location.\n");
 			assert(false);
 		}
 		ifs.close();
 
-		if (verbose) 
+		if (verbose)
 			print_inj_info();
 	}
 }
@@ -155,7 +157,7 @@ void INThandler(int sig) {
 // DO NOT USE UVM (__managed__) variables in this function
 void nvbit_at_init() {
 	/* just make sure all managed variables are allocated on GPU */
-	setenv("CUDA_MANAGED_FORCE_DEVICE_ALLOC","1",1);
+	setenv("CUDA_MANAGED_FORCE_DEVICE_ALLOC", "1", 1);
 
 	/* we get some environment variables that are going to be use to selectively
 	 * instrument (within a interval of kernel indexes and instructions). By
@@ -172,25 +174,24 @@ void nvbit_at_init() {
 	signal(SIGINT, INThandler); // install Ctrl-C handler
 
 	open_output_file(injOutputFilename);
-	if (verbose) 
+	if (verbose)
 		printf("nvbit_at_init:end\n");
 }
-
 
 /* Set used to avoid re-instrumenting the same functions multiple times */
 std::unordered_set<CUfunction> already_instrumented;
 
 void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 
-	parse_params(injInputFilename.c_str());  // injParams are updated based on injection seed file
+	parse_params(injInputFilename.c_str()); // injParams are updated based on injection seed file
 	cudaDeviceSynchronize();
 	verbose_device = verbose;
 	cudaDeviceSynchronize();
 
 	/* Get related functions of the kernel (device function that can be
 	 * called by the kernel) */
-	std::vector<CUfunction> related_functions =
-		nvbit_get_related_functions(ctx, func);
+	std::vector<CUfunction> related_functions = nvbit_get_related_functions(ctx,
+			func);
 
 	/* add kernel itself to the related function vector */
 	related_functions.push_back(func);
@@ -203,8 +204,8 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 			continue;
 		}
 
-		std::string kname = removeSpaces(nvbit_get_func_name(ctx,f));
-		if(strcmp(inj_info.kernelName, kname.c_str()) == 0) { // this is the kernel selected for injection 
+		std::string kname = removeSpaces(nvbit_get_func_name(ctx, f));
+		if (strcmp(inj_info.kernelName, kname.c_str()) == 0) { // this is the kernel selected for injection
 			assert(fout.good()); // ensure that the log file is good.
 
 			/* Get the vector of instruction composing the loaded CUFunction "f" */
@@ -218,12 +219,14 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 			}
 
 			int maxregs = get_maxregs(f);
-			fout << "inspecting: " << kname << "\nnum_static_instrs: " << instrs.size() << "\nmaxregs: " << maxregs << "(" << maxregs << ")" << std::endl;
+			fout << "inspecting: " << kname << "\nnum_static_instrs: "
+					<< instrs.size() << "\nmaxregs: " << maxregs << "("
+					<< maxregs << ")" << std::endl;
 
 			/* We iterate on the vector of instruction */
 			for (auto i : instrs) {
-				std::string opcode = i->getOpcode(); 
-				std::string instType = extractInstType(opcode); 
+				std::string opcode = i->getOpcode();
+				std::string instType = extractInstType(opcode);
 				// printf("extracted instType: %s\n", instType.c_str());
 				// printf("index of instType: %d\n", instTypeNameMap[instType]);
 
@@ -239,9 +242,10 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 				int destPRNum1 = -1;
 				int destPRNum2 = -1;
 
-				int instGrpNum = getOpGroupNum(instTypeNameMap[instType]); ;
+				int instGrpNum = getOpGroupNum(instTypeNameMap[instType]);
+				;
 				if (tokens.size() > 0 && instGrpNum != G_NODEST) { // an actual instruction that writes to either a GPR or PR register
-					if (verbose) 
+					if (verbose)
 						printf("num tokens = %ld ", tokens.size());
 					int start = 1; // first token is opcode string
 					if (tokens[0].find('@') != std::string::npos) { // predicated instruction, ignore first token
@@ -256,43 +260,50 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 						destGPRNum = regnum1;
 						numDestGPRs = (instGrpNum == G_FP64) ? 2 : 1;
 
-						int sz = extractSize(opcode); 
+						int sz = extractSize(opcode);
 						if (sz != 0) { // for LD, IMMA, HMMA
-							numDestGPRs = sz/32; 
+							numDestGPRs = sz / 32;
 						}
 
-						int regtype2 = extractRegNo(tokens[start+1], regnum2);
+						int regtype2 = extractRegNo(tokens[start + 1], regnum2);
 						// the following is probably not possible in Pascal ISA
 						if (regtype2 == 1) { // PR reg, it looks like this instruction has two destination registers
-							destPRNum1  = regnum2;
+							destPRNum1 = regnum2;
 						}
-					} 
+					}
 					if (regtype == 1) {
-						destPRNum1  = regnum1;
+						destPRNum1 = regnum1;
 
-						if(instGrpNum != G_PR) { // this is not a PR-only instruction.
-							int regtype2 = extractRegNo(tokens[start+1], regnum2);
+						if (instGrpNum != G_PR) { // this is not a PR-only instruction.
+							int regtype2 = extractRegNo(tokens[start + 1],
+									regnum2);
 							if (regtype2 == 0) { // a GPR reg, it looks like this instruction has two destination registers
 								destGPRNum = regnum2;
 								numDestGPRs = (instGrpNum == G_FP64) ? 2 : 1;
 							}
 						} else { // check if the 2nd reg is a PR dest
 							if (tokens.size() > 5) { // this seems like the instruction that has 2 PR destinations 
-								int regtype2 = extractRegNo(tokens[start+1], regnum2);
+								int regtype2 = extractRegNo(tokens[start + 1],
+										regnum2);
 								if (regtype2 == 1) { // a PR reg, it looks like this instruction has two destination registers
-									destPRNum2  = regnum2;
+									destPRNum2 = regnum2;
 								}
 							}
 						}
 					}
-					if (verbose) 
-						printf("offset = 0x%x, opcode_info=%d, instType=%s, opcode=%s, numDestGPRs=%d, destGPRNum=%d, destPRNum1=%d, destPRNum2=%d, instruction: %s\n", i->getOffset(), instTypeNameMap[instType], instType.c_str(), opcode.c_str(), numDestGPRs, destGPRNum, destPRNum1, destPRNum2, i->getSass());
+					if (verbose)
+						printf(
+								"offset = 0x%x, opcode_info=%d, instType=%s, opcode=%s, numDestGPRs=%d, destGPRNum=%d, destPRNum1=%d, destPRNum2=%d, instruction: %s\n",
+								i->getOffset(), instTypeNameMap[instType],
+								instType.c_str(), opcode.c_str(), numDestGPRs,
+								destGPRNum, destPRNum1, destPRNum2,
+								i->getSass());
 				}
 
 				nvbit_insert_call(i, "inject_error", IPOINT_AFTER);
-				nvbit_add_call_arg_const_val64(i, (uint64_t)&inj_info);
-				nvbit_add_call_arg_const_val64(i, (uint64_t)counters);
-				nvbit_add_call_arg_const_val64(i, (uint64_t)&verbose_device);
+				nvbit_add_call_arg_const_val64(i, (uint64_t) &inj_info);
+				nvbit_add_call_arg_const_val64(i, (uint64_t) counters);
+				nvbit_add_call_arg_const_val64(i, (uint64_t) &verbose_device);
 
 				nvbit_add_call_arg_const_val32(i, i->getOffset()); // offset (for pc) info
 				nvbit_add_call_arg_const_val32(i, instTypeNameMap[instType]); // opcode info
@@ -302,13 +313,13 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 				if (destGPRNum != -1) {
 					nvbit_add_call_arg_reg_val(i, destGPRNum); // destination GPR register val
 				} else {
-					nvbit_add_call_arg_const_val32(i, (unsigned int)-1); // destination GPR register val 
+					nvbit_add_call_arg_const_val32(i, (unsigned int) -1); // destination GPR register val
 				}
 				nvbit_add_call_arg_const_val32(i, numDestGPRs); // number of destination GPR registers
 
 				if (isGPInst(instGrpNum) && inj_info.groupID == G_GP) { // PR register numbers should be -1, if the injection model is G_GP. This way we will never inject errors into them
-					nvbit_add_call_arg_const_val32(i, (unsigned int)-1); // first destination PR register number 
-					nvbit_add_call_arg_const_val32(i, (unsigned int)-1); // second destination PR register number 
+					nvbit_add_call_arg_const_val32(i, (unsigned int) -1); // first destination PR register number
+					nvbit_add_call_arg_const_val32(i, (unsigned int) -1); // second destination PR register number
 				} else {
 					nvbit_add_call_arg_const_val32(i, destPRNum1); // first destination PR register number 
 					nvbit_add_call_arg_const_val32(i, destPRNum2); // second destination PR register number 
@@ -319,7 +330,10 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 		} else {
 			const std::vector<Instr *> &instrs = nvbit_get_instrs(ctx, f);
 			if (verbose)
-				printf(":::NVBit-inject-error; NOT inspecting: %s; %d, %d, num_static_instrs: %ld; maxregs: %d:::", kname.c_str(), kernel_id, inj_info.kernelCount, instrs.size(), get_maxregs(f));
+				printf(
+						":::NVBit-inject-error; NOT inspecting: %s; %d, %d, num_static_instrs: %ld; maxregs: %d:::",
+						kname.c_str(), kernel_id, inj_info.kernelCount,
+						instrs.size(), get_maxregs(f));
 		}
 	}
 }
@@ -333,89 +347,112 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
 		const char *name, void *params, CUresult *pStatus) {
 	/* Identify all the possible CUDA launch events */
-	if (cbid == API_CUDA_cuLaunch ||
-			cbid == API_CUDA_cuLaunchKernel_ptsz ||
-			cbid == API_CUDA_cuLaunchGrid ||
-			cbid == API_CUDA_cuLaunchGridAsync || 
-			cbid == API_CUDA_cuLaunchKernel) {
+	if (cbid == API_CUDA_cuLaunch || cbid == API_CUDA_cuLaunchKernel_ptsz
+			|| cbid == API_CUDA_cuLaunchGrid
+			|| cbid == API_CUDA_cuLaunchGridAsync
+			|| cbid == API_CUDA_cuLaunchKernel) {
 
 		/* cast params to cuLaunch_params since if we are here we know these are
 		 * the right parameters type */
 		cuLaunch_params * p = (cuLaunch_params *) params;
 
-		if(!is_exit) {
+		if (!is_exit) {
 			pthread_mutex_lock(&mutex);
-            		instrument_function_if_needed(ctx, p->f);
+			instrument_function_if_needed(ctx, p->f);
 			init_counters();
 			cudaDeviceSynchronize();
-			parse_params(injInputFilename);  // injParams are updated based on injection seed file
+			parse_params(injInputFilename); // injParams are updated based on injection seed file
 
 			// print_inj_info();
 			inj_info.errorInjected = false;
-			inj_info.areParamsReady = (inj_info.kernelCount== kernel_id); // areParamsReady = true for the selected kernel 
-			if (verbose) inj_info.debug[NUM_DEBUG_VALS-1] = -1; // set debug flag to check whether the the instrumented kernel was executed 
-			if (verbose) printf("setting areParamsReady=%d, inj_info.kernelCount=%d, kernel_id=%d\n", inj_info.areParamsReady, inj_info.kernelCount, kernel_id); 
+			inj_info.areParamsReady = (inj_info.kernelCount == kernel_id); // areParamsReady = true for the selected kernel
+			if (verbose)
+				inj_info.debug[NUM_DEBUG_VALS - 1] = -1; // set debug flag to check whether the the instrumented kernel was executed
+			if (verbose)
+				printf(
+						"setting areParamsReady=%d, inj_info.kernelCount=%d, kernel_id=%d\n",
+						inj_info.areParamsReady, inj_info.kernelCount,
+						kernel_id);
 			cudaDeviceSynchronize();
 
 			nvbit_enable_instrumented(ctx, p->f, inj_info.areParamsReady); // should we run the un-instrumented code? 
 			// nvbit_enable_instrumented(ctx, p->f, false); // for debugging
 			cudaDeviceSynchronize();
-		}  else {
-			if (verbose) printf("is_exit\n"); 
+		} else {
+			if (verbose)
+				printf("is_exit\n");
 			cudaDeviceSynchronize();
 
 			cudaError_t le = cudaGetLastError();
-			if ( cudaSuccess != le ) {
+			if (cudaSuccess != le) {
 				assert(fout.good());
-				std::cout << "ERROR FAIL in kernel execution (" << cudaGetErrorString(le) << "); ";
-				fout << "ERROR FAIL in kernel execution (" << cudaGetErrorString(le) << "); ";
+				std::cout << "ERROR FAIL in kernel execution ("
+						<< cudaGetErrorString(le) << "); ";
+				fout << "ERROR FAIL in kernel execution ("
+						<< cudaGetErrorString(le) << "); ";
 				fout.flush();
 				exit(1); // let's exit early because no error was injected
 			}
 
-			std::string kname = removeSpaces(nvbit_get_func_name(ctx,p->f));
+			std::string kname = removeSpaces(nvbit_get_func_name(ctx, p->f));
 			if (inj_info.areParamsReady) {
 				inj_info.areParamsReady = false;
 				int num_ctas = 0;
-				if ( cbid == API_CUDA_cuLaunchKernel_ptsz || cbid == API_CUDA_cuLaunchKernel) {
+				if (cbid == API_CUDA_cuLaunchKernel_ptsz
+						|| cbid == API_CUDA_cuLaunchKernel) {
 					cuLaunchKernel_params * p2 = (cuLaunchKernel_params*) params;
 					num_ctas = p2->gridDimX * p2->gridDimY * p2->gridDimZ;
 				}
 				assert(fout.good());
 				fout << "Injection data" << std::endl;
 				fout << "index: " << kernel_id << std::endl;
-				fout << "kernel_name: " << kname  << std::endl;
+				fout << "kernel_name: " << kname << std::endl;
 				fout << "ctas: " << num_ctas << std::endl;
-				fout << "instrs: " << get_inst_count() << std::endl; 
+				fout << "instrs: " << get_inst_count() << std::endl;
 
-				write_inj_info(); 
+				write_inj_info();
 
 				if (inj_info.opcode == NOP) {
 					fout << "Error not injected\n";
 				}
 
 				if (verbose != 0 && inj_info.debug[2] != inj_info.debug[3]) { // sanity check
-					fout << "ERROR FAIL in kernel execution; Expected reg value doesn't match; \n";
-					fout << "maxRegs: " << inj_info.debug[0] << ", destGPRNum: " << inj_info.debug[1] << ", expected_val: " 
-						<< std::hex << inj_info.debug[2] << ", myval: " <<  inj_info.debug[3] << std::dec << "\n"; 
+					fout
+							<< "ERROR FAIL in kernel execution; Expected reg value doesn't match; \n";
+					fout << "maxRegs: " << inj_info.debug[0] << ", destGPRNum: "
+							<< inj_info.debug[1] << ", expected_val: "
+							<< std::hex << inj_info.debug[2] << ", myval: "
+							<< inj_info.debug[3] << std::dec << "\n";
 					fout << std::endl;
-					std::cout << "NVBit-inject-error; ERROR FAIL in kernel execution; Expected reg value doesn't match; \n";
-					std::cout << "maxRegs: " << inj_info.debug[0] << ", destGPRNum: " << inj_info.debug[1] << ", expected_val: " 
-						<< std::hex << inj_info.debug[2] << ", myval: " <<  inj_info.debug[3] << std::dec << "\n"; 
-					for (int x=4; x<10; x++) {
-						std::cout << "debug[" << x << "]: " << std::hex << inj_info.debug[x] << "\n";
+					std::cout
+							<< "NVBit-inject-error; ERROR FAIL in kernel execution; Expected reg value doesn't match; \n";
+					std::cout << "maxRegs: " << inj_info.debug[0]
+							<< ", destGPRNum: " << inj_info.debug[1]
+							<< ", expected_val: " << std::hex
+							<< inj_info.debug[2] << ", myval: "
+							<< inj_info.debug[3] << std::dec << "\n";
+					for (int x = 4; x < 10; x++) {
+						std::cout << "debug[" << x << "]: " << std::hex
+								<< inj_info.debug[x] << "\n";
 					}
-					std::cout << "debug[11]: " << std::hex << inj_info.debug[11] << "\n";
-					std::cout << "debug[12]: " << inj_info.debug[12] << " " << instTypeNames[inj_info.debug[12]]<< "\n";
-					std::cout << "debug[13]: " << inj_info.debug[13] << "\n"; 
-					std::cout << "debug[14]: " << std::hex <<  inj_info.debug[14] << "\n"; 
+					std::cout << "debug[11]: " << std::hex << inj_info.debug[11]
+							<< "\n";
+					std::cout << "debug[12]: " << inj_info.debug[12] << " "
+							<< instTypeNames[inj_info.debug[12]] << "\n";
+					std::cout << "debug[13]: " << inj_info.debug[13] << "\n";
+					std::cout << "debug[14]: " << std::hex << inj_info.debug[14]
+							<< "\n";
 					assert(inj_info.debug[2] == inj_info.debug[3]);
 					// printf("\nmaxRegs: %d, destGPRNum: %d, expected_val: %x, myval: %x, myval@-1: %x, myval@+1: %x, myval with maxRegs+1: %x, myval with maxRegs-1: %x\n", 
 					// inj_info.debug[0], inj_info.debug[1], inj_info.debug[2], inj_info.debug[3], inj_info.debug[4], inj_info.debug[5], inj_info.debug[6], inj_info.debug[7]);
 				}
 				fout.flush();
 			}
-			if (verbose) printf("\n index: %d; kernel_name: %s; used_instrumented=%d; \n", kernel_id, kname.c_str(), inj_info.debug[NUM_DEBUG_VALS-1]);
+			if (verbose)
+				printf(
+						"\n index: %d; kernel_name: %s; used_instrumented=%d; \n",
+						kernel_id, kname.c_str(),
+						inj_info.debug[NUM_DEBUG_VALS - 1]);
 			kernel_id++; // always increment kernel_id on kernel exit
 
 			cudaDeviceSynchronize();
@@ -423,4 +460,5 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
 		}
 	}
 }
-void nvbit_at_term() { } // nothing to do here. 
+void nvbit_at_term() {
+} // nothing to do here.
