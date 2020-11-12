@@ -122,7 +122,7 @@ clean:
 	rm -rf $(OBJS) $(TARGET)
 
 test_pure_yolo:
-	#eval LD_PRELOAD=/home/carol/NVBITFI/nvbit_release/tools/nvbitfi/profiler/profiler.so 
+	#eval 	env LD_PRELOAD=/home/carol/NVBITFI/nvbit_release/tools/nvbitfi/profiler/profiler.so  
 	./$(TARGET) detect cfg/yolo.cfg $(RAD_DIR)/data/darknet/yolo_v2.weights data/dog.jpg
 	
 test:
