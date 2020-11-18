@@ -151,7 +151,7 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 					if (igid == G_FP32 || igid == G_FP64) {
 						float beforeValFloat = *((float*) (&inj_info->beforeVal));
 						float valueModified = beforeValFloat * definedFP32RelativeError;
-						inj_info->afterVal = *((*unsigned int) &valueModified);
+						inj_info->afterVal = *((unsigned int*) &valueModified);
 					}
 #else
 					inj_info->afterVal = inj_info->beforeVal ^ inj_info->mask;
