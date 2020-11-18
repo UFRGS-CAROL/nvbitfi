@@ -148,24 +148,11 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 
 #if INJECT_RELATIVE_ERROR == 1
 					constexpr float definedFP32RelativeError = 2.0f;
-					switch (igid) {
-						case G_FP32: // inject into one of the dest reg
-						case G_FP64: { // inject into one of the regs written by the inst
-							float beforeValFloat = *((float*) (&inj_info->beforeVal));
-							inj_info->afterVal = beforeValFloat * definedFP32RelativeError;
-							break;
-						}
-						// For the following cases I cannot previously know which is the precision
-						// to know the for which value to multiply the relative error
-						case G_LD:// inject into one of the regs written by the inst
-						case G_PR:// inject into pr register
-						case G_GPPR:// inject into one of the GPR or PR destination register
-						case G_GP:// inject into one of the GPR destination register
-						case G_NODEST:// do nothing
-						default:
-						break;
+					if (igid == G_FP32 || igid == G_FP64) {
+						float beforeValFloat = *((float*) (&inj_info->beforeVal));
+						float valueModified = beforeValFloat * definedFP32RelativeError;
+						inj_info->afterVal = *((*unsigned int) &valueModified);
 					}
-
 #else
 					inj_info->afterVal = inj_info->beforeVal ^ inj_info->mask;
 #endif
