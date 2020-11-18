@@ -150,6 +150,8 @@ all_apps = {
         'py_faster_rcnn.py', # binary name
         '/home/carol/radiation-benchmarks/src/cuda/py-faster-rcnn/', # path to the binary file
         5, # expected runtime
+       "",
+    ],
     
     'trip_micro': [
         NVBITFI_HOME + '/test-apps/trip_micro', # workload directory
