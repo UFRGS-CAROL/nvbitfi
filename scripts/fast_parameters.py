@@ -82,7 +82,7 @@ all_apps = {
 
     'darknet_v3': [
         NVBITFI_HOME + '/test-apps/darknet_v3', # workload directory
-        'darknet_v3_half', # binary name
+        'darknet_v3_single', # binary name
         NVBITFI_HOME + '/test-apps/darknet_v3/', # path to the binary file
         5, # expected runtime
         "" # additional parameters to the run.sh
@@ -150,6 +150,8 @@ all_apps = {
         'py_faster_rcnn.py', # binary name
         '/home/carol/radiation-benchmarks/src/cuda/py-faster-rcnn/', # path to the binary file
         5, # expected runtime
+       "",
+    ],
     
     'trip_micro': [
         NVBITFI_HOME + '/test-apps/trip_micro', # workload directory
