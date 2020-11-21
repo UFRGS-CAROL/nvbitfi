@@ -145,13 +145,14 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 				if (DUMMY) { // no error is injected
 					inj_info->afterVal = inj_info->beforeVal;
 				} else {
-
+					printf("opcode %d instID %d groupID %d\n", inj_info->opcode,
+							inj_info->instID, inj_info->groupID);
 #if INJECT_RELATIVE_ERROR == 1
 					constexpr float definedFP32RelativeError = 2.0f;
 					if (igid == G_FP32 || igid == G_FP64) {
 						float beforeValFloat = *((float*) (&inj_info->beforeVal));
 						float valueModified = beforeValFloat * definedFP32RelativeError;
-						inj_info->afterVal = *((unsigned int*) &valueModified);
+						inj_info->afterVal = *((unsigned int*) (&valueModified));
 					}
 #else
 					inj_info->afterVal = inj_info->beforeVal ^ inj_info->mask;
