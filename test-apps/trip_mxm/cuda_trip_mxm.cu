@@ -546,11 +546,12 @@ __global__ void MatrixMulKernel(tested_type *d_A0, tested_type *d_A1, tested_typ
 
 	register tested_type acc = 0.0;
 	for (k = 0; k < n; k++) {
-		acc = 	read_voter(d_A0, d_A1, d_A2, ty * n + k) 
-				* 
-				read_voter(d_B0, d_B1, d_B2, k * n + tx)
-				+
-				acc;
+		//acc = 	read_voter(d_A0, d_A1, d_A2, ty * n + k) 
+		//		* 
+		//		read_voter(d_B0, d_B1, d_B2, k * n + tx)
+		//		+
+		//		acc;
+		acc += d_A0[ty * n + k] * d_B0[k * n + tx];
 	}
 
 	d_C0[ty * n + tx] = acc;
