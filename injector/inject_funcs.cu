@@ -44,6 +44,49 @@ __device__ unsigned int get_mask(uint32_t bitFlipModel, float bitIDSeed,
 			+ (bitFlipModel == ZERO_VALUE) * oldVal;
 }
 
+/**
+ * Function created to inject a FlexGrip
+ * Error model on the instructions
+ */
+__inline__ __device__
+void flex_grip_error_model(inj_info_t *injectionInfo) {
+	constexpr float definedFP32RelativeError = 2.0f;
+	unsigned int valueModifiedInt = injectionInfo->beforeVal;
+	printf("OPCODE -- %d ", injectionInfo->opcode);
+	switch (injectionInfo->opcode) {
+	case FFMA:
+	case FADD:
+	case FMUL:{
+		printf("E UM FLOAT OPERAND\n");
+		float beforeValFloat = *((float*) (&valueModifiedInt));
+		float valueModified = beforeValFloat * definedFP32RelativeError;
+		valueModifiedInt = *((unsigned int*) &valueModified);
+		break;
+	}
+	case IADD:
+	case IMUL:
+	case IMAD:{
+		printf("E UM INT OPERAND\n");
+		float beforeValFloat = float(*((int*) (&valueModifiedInt)));
+		float valueModified = beforeValFloat * definedFP32RelativeError;
+		valueModifiedInt = *((unsigned int*) &valueModified);
+		break;
+	}
+	case ISET:
+		printf("E UM ISET OPERAND\n");
+		break;
+	case BRA:
+		printf("E UM BRA OPERAND\n");
+		break;
+	default:
+		printf("DESCONHECO\n");
+		break;
+	}
+
+
+	injectionInfo->afterVal = valueModifiedInt;
+}
+
 extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 		uint64_t pcounters, uint64_t pverbose_device, int offset, int index,
 		int grp_index, int destGPRNum, int regval, int numDestGPRs,
@@ -145,18 +188,11 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 				if (DUMMY) { // no error is injected
 					inj_info->afterVal = inj_info->beforeVal;
 				} else {
-					printf("opcode %d instID %d groupID %d\n", inj_info->opcode,
-							inj_info->instID, inj_info->groupID);
-#if INJECT_RELATIVE_ERROR == 1
-					constexpr float definedFP32RelativeError = 2.0f;
-					if (igid == G_FP32 || igid == G_FP64) {
-						float beforeValFloat = *((float*) (&inj_info->beforeVal));
-						float valueModified = beforeValFloat * definedFP32RelativeError;
-						inj_info->afterVal = *((unsigned int*) (&valueModified));
-					}
-#else
-					inj_info->afterVal = inj_info->beforeVal ^ inj_info->mask;
-#endif
+//#if INJECT_RELATIVE_ERROR == 1
+					flex_grip_error_model(inj_info);
+//#else
+//					inj_info->afterVal = inj_info->beforeVal ^ inj_info->mask;
+//#endif
 					nvbit_write_reg((uint64_t) inj_info->regNo,
 							inj_info->afterVal);
 				}
