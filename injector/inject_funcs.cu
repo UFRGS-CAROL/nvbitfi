@@ -49,14 +49,17 @@ __device__ unsigned int get_mask(uint32_t bitFlipModel, float bitIDSeed,
  * Error model on the instructions
  */
 __inline__ __device__
-void flex_grip_error_model(inj_info_t *injectionInfo) {
+void flex_grip_error_model(unsigned int &afterVal, unsigned int beforeVal,
+		int opcode) {
 	constexpr float definedFP32RelativeError = 2.0f;
-	unsigned int valueModifiedInt = injectionInfo->beforeVal;
-	printf("OPCODE -- %d ", injectionInfo->opcode);
-	switch (injectionInfo->opcode) {
+
+	unsigned int valueModifiedInt = beforeVal;
+	printf("OPCODE -- %d ", opcode);
+
+	switch (opcode) {
 	case FFMA:
 	case FADD:
-	case FMUL:{
+	case FMUL: {
 		printf("E UM FLOAT OPERAND\n");
 		float beforeValFloat = *((float*) (&valueModifiedInt));
 		float valueModified = beforeValFloat * definedFP32RelativeError;
@@ -65,7 +68,7 @@ void flex_grip_error_model(inj_info_t *injectionInfo) {
 	}
 	case IADD:
 	case IMUL:
-	case IMAD:{
+	case IMAD: {
 		printf("E UM INT OPERAND\n");
 		float beforeValFloat = float(*((int*) (&valueModifiedInt)));
 		float valueModified = beforeValFloat * definedFP32RelativeError;
@@ -82,9 +85,7 @@ void flex_grip_error_model(inj_info_t *injectionInfo) {
 		printf("DESCONHECO\n");
 		break;
 	}
-
-
-	injectionInfo->afterVal = valueModifiedInt;
+	afterVal = valueModifiedInt;
 }
 
 extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
