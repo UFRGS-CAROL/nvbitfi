@@ -27,7 +27,7 @@ NVBIT_TOOL=injector.so
 all: $(NVBIT_TOOL)
 
 $(NVBIT_TOOL): $(OBJECTS) $(NVBIT_PATH)/libnvbit.a
-	$(NVCC) -arch=sm_$(ARCH) -O3 $(OBJECTS) $(LIBS) $(NVCC_PATH) -lcuda -lcudart_static -shared -o $@
+	$(NVCC) -gencode arch=compute_70,code=[sm_70,compute_70] -gencode arch=compute_35,code=[sm_35,compute_35] -O3 $(OBJECTS) $(LIBS) $(NVCC_PATH) -lcuda -lcudart_static -shared -o $@
 
 %.o: %.cu
 	$(NVCC) -dc -c -std=c++11 $(INCLUDES) -Xptxas -cloning=no -Xcompiler -Wall -arch=sm_$(ARCH) -O3 -Xcompiler -fPIC $< -o $@

@@ -158,13 +158,23 @@ def run_multiple_injections_igid(app, inj_mode, igid, where_to_run):
 # generic sdc verification
 ###############################################################################
 def check_sdc_fernando(app, kname, kcount, igid, bfm, iid, opid, bid, inj_type):
+    res_fname = p.app_log_dir[app] + "/results-mode" + inj_type + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt"
+    with open(res_fname, "r") as fp:
+         last_line = fp.readlines()[-1]
+
+    pattern = r'.*;.*;.*;.*;.*;.*:.*:(\S+):.*:.*:.*:.*:.*:value_before(\S+):value_after(\S+)'
+    m = re.match(pattern, last_line)
+    opcode_str, value_before, value_after = [None] * 3
+    if m:
+        opcode_str, value_before, value_after = m.groups()
+
     #########################################################
     with open(p.NVBITFI_HOME + "/logs_sdcs_" + str(app) + "_" + str(inj_type) + ".csv", "a") as fault_model:
         proc = subprocess.Popen("ls -Art /var/radiation-benchmarks/log/ | tail -n 1", stdout=subprocess.PIPE,
                                 shell=True)
         (out, err) = proc.communicate()
         # Kernel=%s, kcount=%s, igid=%s, bfm=%s, instID=%s, opID=%s, bitLocation=%s
-        output_list = [out.rstrip(), kname, kcount, igid, bfm, iid, opid, bid]
+        output_list = [out.rstrip(), kname, kcount, igid, bfm, iid, opid, bid, inj_type, opcode_str, value_before, value_after]
         fault_model.write(";".join(str(i) for i in output_list) + "\n")
 
 

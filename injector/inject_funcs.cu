@@ -22,6 +22,11 @@
 #include "injector.h"
 #include "arch.h"
 
+/**
+ * Error model from flex grip
+ */
+#include "flex_grip_error_model.h"
+
 // flatten thread id
 __inline__ __device__ int get_flat_tid() {
 	int tid_b = threadIdx.x
@@ -44,49 +49,7 @@ __device__ unsigned int get_mask(uint32_t bitFlipModel, float bitIDSeed,
 			+ (bitFlipModel == ZERO_VALUE) * oldVal;
 }
 
-/**
- * Function created to inject a FlexGrip
- * Error model on the instructions
- */
-__inline__ __device__
-void flex_grip_error_model(unsigned int &afterVal, unsigned int beforeVal,
-		int opcode) {
-	constexpr float definedFP32RelativeError = 2.0f;
 
-	unsigned int valueModifiedInt = beforeVal;
-	printf("OPCODE -- %d ", opcode);
-
-	switch (opcode) {
-	case FFMA:
-	case FADD:
-	case FMUL: {
-		printf("E UM FLOAT OPERAND\n");
-		float beforeValFloat = *((float*) (&valueModifiedInt));
-		float valueModified = beforeValFloat * definedFP32RelativeError;
-		valueModifiedInt = *((unsigned int*) &valueModified);
-		break;
-	}
-	case IADD:
-	case IMUL:
-	case IMAD: {
-		printf("E UM INT OPERAND\n");
-		float beforeValFloat = float(*((int*) (&valueModifiedInt)));
-		float valueModified = beforeValFloat * definedFP32RelativeError;
-		valueModifiedInt = *((unsigned int*) &valueModified);
-		break;
-	}
-	case ISET:
-		printf("E UM ISET OPERAND\n");
-		break;
-	case BRA:
-		printf("E UM BRA OPERAND\n");
-		break;
-	default:
-		printf("DESCONHECO\n");
-		break;
-	}
-	afterVal = valueModifiedInt;
-}
 
 extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 		uint64_t pcounters, uint64_t pverbose_device, int offset, int index,
@@ -163,6 +126,7 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 		int totalDest = numDestGPRs + (destPRNum1 != -1) + (destPRNum2 != -1);
 		assert(totalDest > 0);
 		int injDestID = totalDest * inj_info->opIDSeed;
+		bool errorInjected = true;
 		if (injDestID < numDestGPRs) {
 			if (destGPRNum != -1) {
 				// for debugging
@@ -189,18 +153,20 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 				if (DUMMY) { // no error is injected
 					inj_info->afterVal = inj_info->beforeVal;
 				} else {
-//#if INJECT_RELATIVE_ERROR == 1
-					flex_grip_error_model(inj_info);
-//#else
-//					inj_info->afterVal = inj_info->beforeVal ^ inj_info->mask;
-//#endif
+					if (INJECT_RELATIVE_ERROR == 1 && inj_info->bitFlipModel == RANDOM_VALUE){
+						errorInjected = flex_grip_error_model(inj_info->afterVal, inj_info->beforeVal, index);
+					} else {
+						inj_info->afterVal = inj_info->beforeVal ^ inj_info->mask;
+					}
 					nvbit_write_reg((uint64_t) inj_info->regNo,
 							inj_info->afterVal);
 				}
 				inj_info->opcode = index; // record the opcode where the injection is performed
 				inj_info->pcOffset = offset; // record the pc where the injection is performed (offset from the beginning of the function)
 				inj_info->tid = get_flat_tid(); // record the thread ID where the injection is performed
-				inj_info->errorInjected = true; // perf optimization
+				// Edited: before the value was set by default true
+				// now it depends on the error model
+				inj_info->errorInjected = errorInjected; // perf optimization
 				assert(inj_info->debug[12] == inj_info->opcode);
 				assert(inj_info->debug[13] == inj_info->pcOffset);
 				if (verbose_device)
