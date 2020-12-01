@@ -18,8 +18,8 @@ NVCC_PATH=-L $(subst bin/nvcc,lib64,$(shell which nvcc | tr -s /))
 
 SOURCES=$(wildcard *.cu)
 OBJECTS=$(SOURCES:.cu=.o)
-ARCH=70
-#ARCH=35
+#ARCH=70
+ARCH= -gencode arch=compute_70,code=[sm_70,compute_70] -gencode arch=compute_35,code=[sm_35,compute_35] 
 
 # Profiling is often slow. Using an approximate profile can speed it up by
 # orders of magnitude.  Set FAST_APPROXIMATE_PROFILE to SKIP_PROFILED_KERNELS
@@ -37,13 +37,13 @@ NVBIT_TOOL=profiler.so
 all: $(NVBIT_TOOL)
 
 $(NVBIT_TOOL): $(OBJECTS) $(NVBIT_PATH)/libnvbit.a
-	$(NVCC) -arch=sm_$(ARCH) -O3 $(OBJECTS) $(LIBS) $(NVCC_PATH) -lcuda -lcudart_static -shared -o $@
+	$(NVCC) $(ARCH) -O3 $(OBJECTS) $(LIBS) $(NVCC_PATH) -lcuda -lcudart_static -shared -o $@
 
 %.o: %.cu
-	$(NVCC) -dc -c -std=c++11 $(INCLUDES) -Xptxas -cloning=no -Xcompiler -Wall -arch=sm_$(ARCH) -O3 -Xcompiler -fPIC $(FAST_APPROXIMATE_PROFILE) $< -o $@
+	$(NVCC) -dc -c -std=c++11 $(INCLUDES) -Xptxas -cloning=no -Xcompiler -Wall $(ARCH) -O3 -Xcompiler -fPIC $(FAST_APPROXIMATE_PROFILE) $< -o $@
 
 inject_funcs.o: inject_funcs.cu
-	$(NVCC) $(INCLUDES) -maxrregcount=16 -Xptxas -astoolspatch --keep-device-functions -arch=sm_$(ARCH) -Xcompiler -Wall -Xcompiler -fPIC -c $< -o $@
+	$(NVCC) $(INCLUDES) -maxrregcount=16 -Xptxas -astoolspatch --keep-device-functions $(ARCH) -Xcompiler -Wall -Xcompiler -fPIC -c $< -o $@
 
 clean:
 	rm -f *.so *.o
