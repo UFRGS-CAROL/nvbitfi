@@ -3,7 +3,7 @@ CUDNN=0
 OPENCV?=0
 OPENMP=1
 DEBUG?=0
-REAL_TYPE?=double
+REAL_TYPE?=float
 LOGS?=1
 OPENGEMM?=0
 BUILDPROFILER=0
@@ -17,9 +17,9 @@ RADIATIONDIR=$(HOME)/radiation-benchmarks/
 CUTLASSDIR=$(HOME)/cutlass/include
 
 # This is what I use, uncomment if you know your arch and want to specify
-#ARCH=  -gencode arch=compute_35,code=[sm_35,compute_35] 
+ARCH=  -gencode arch=compute_35,code=[sm_35,compute_35] 
 #ARCH+=-gencode arch=compute_60,code=[sm_60,compute_60] 
-ARCH+= -gencode arch=compute_70,code=[sm_70,compute_70] 
+#ARCH+= -gencode arch=compute_70,code=[sm_70,compute_70] 
 
 VPATH=./src/:./examples
 SLIB=libdarknet.so
