@@ -37,7 +37,7 @@ typedef enum {
 	SMALL = 0, MEDIUM, LARGE, SIZE_TYPES
 } ErrorSize;
 
-__inline__    __device__ RelativeIndex get_relative_index(int opcode) {
+__inline__     __device__ RelativeIndex get_relative_index(int opcode) {
 	switch (opcode) {
 	case FFMA:
 		return FFMA_I;
@@ -58,7 +58,7 @@ __inline__    __device__ RelativeIndex get_relative_index(int opcode) {
 	}
 }
 
-__inline__    __device__ ErrorSize get_error_size(float beforeVal) {
+__inline__     __device__ ErrorSize get_error_size(float beforeVal) {
 	float beforeValAbs = fabsf(beforeVal);
 
 	/*Selects the ErrorSize model */
@@ -81,8 +81,7 @@ float calc_relative_error(float beforeVal, RelativeIndex rI,
 	//Define powerlaw
 	float xMin = xMins[relativeIndex];
 	float alpha = alphas[relativeIndex];
-	float relativeError = powf(xMin * (1.0f - randomPowerLawInput),
-			(-1.0f / (alpha - 1.0f)));
+	float relativeError = xMin * powf((1.0f - randomPowerLawInput), (-1.0f / (alpha - 1.0f)));
 
 	float valueModified = beforeVal * relativeError;
 	return valueModified;
@@ -126,7 +125,6 @@ bool flex_grip_error_model(unsigned int &afterVal, unsigned int beforeVal,
 		//TODO: Create for ISET and BRA
 	}
 	afterVal = valueModifiedInt;
-//	printf("AFTER VAL %x\n", afterVal);
 
 	return errorInjected;
 }

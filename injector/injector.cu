@@ -180,17 +180,14 @@ void nvbit_at_init() {
 }
 
 /**
- * Function to generate a normal random value
+ * Function to generate a real uniform random value
  */
 void generate_new_random_value() {
 	if (INJECT_RELATIVE_ERROR == 1 && inj_info.bitFlipModel == RANDOM_VALUE) {
-		std::random_device rd { };
-		std::mt19937 gen { rd() };
-
-		// values near the mean are the most likely
-		// standard deviation affects the dispersion of generated values from the mean
-		std::normal_distribution<float> d { 0.0f, 1.0f };
-		inj_info.opIDSeed = d(gen);
+		std::random_device rd; //Will be used to obtain a seed for the random number engine
+		std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+		std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+		inj_info.opIDSeed = dis(gen);
 	}
 }
 
