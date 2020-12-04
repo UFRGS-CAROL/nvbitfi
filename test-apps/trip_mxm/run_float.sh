@@ -9,4 +9,5 @@ sed -i '/Preparing/c\' stdout.txt
 sed -i '/Average/c\' stdout.txt
 sed -i '/time/c\' stdout.txt
 sed -i '/SIZE/c\' stdout.txt
+sed -i '/^$/d' stdout.txt
 

@@ -63,7 +63,7 @@ keep_logs = True
 # per instruction group (IGID) and bit-flip model (BFM).
 # 
 # NUM_INJECTIONS = 644
-NUM_INJECTIONS = 1000
+NUM_INJECTIONS = 2000
 
 # Specify how many injections you want to perform per IGID and BFM combination. 
 # Only the first THRESHOLD_JOBS will be selected from the generated NUM_INJECTIONS.
@@ -178,8 +178,11 @@ CAT_STR = ["Masked: Error was never read", "Masked: Write before read",
 # G_GPPR and G_GP should be equivalent because we do not inject into predicate regiters in this release. 
 inst_value_igid_bfm_map = {
    #G_FP64: [FLIP_SINGLE_BIT],
-   G_GP:   [FLIP_SINGLE_BIT], # RANDOM_VALUE],
-   G_FP32: [FLIP_SINGLE_BIT], # RANDOM_VALUE],
+  # G_GP:   [FLIP_SINGLE_BIT],
+  # G_FP32: [FLIP_SINGLE_BIT],
+
+   G_GP:   [RANDOM_VALUE],
+   G_FP32: [RANDOM_VALUE],
 #   G_LD:   [RANDOM_VALUE]
 
 #  Supported models

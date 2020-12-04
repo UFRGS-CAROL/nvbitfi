@@ -43,5 +43,6 @@ typedef struct {
 	bool errorInjected;
 
 	int debug[NUM_DEBUG_VALS];
+
 } inj_info_t; 
 #endif

@@ -28,8 +28,8 @@ do
     export FAULTS=10
     ./test.sh ${i}
 
-    tar czf ${i}_nvbitfi_1k.tar.gz logs_sdcs_* /home/carol/NVBITFI/nvbit_release/tools/nvbitfi/logs/results/ /var/radiation-benchmarks/log/
-    rm -rf /var/radiation-benchmarks/log/*.log logs/* *.csv
+#    tar czf ${i}_nvbitfi_1k.tar.gz logs_sdcs_* /home/carol/NVBITFI/nvbit_release/tools/nvbitfi/logs/results/ /var/radiation-benchmarks/log/
+#    rm -rf /var/radiation-benchmarks/log/*.log logs/* *.csv
 done;
 
-sudo poweroff
+#sudo poweroff

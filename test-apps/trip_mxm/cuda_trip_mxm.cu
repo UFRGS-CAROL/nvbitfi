@@ -900,8 +900,8 @@ int main(int argc, char* argv[]) {
 			cudaMemcpyToSymbol(is_memory_bad, &host_is_memory_bad,
 				sizeof(unsigned long long int), 0, cudaMemcpyHostToDevice) );
 
-		if (verbose)
-			printf(",");
+		//if (verbose)
+		//	printf(",");
 
 		kernel_time = mysecond();
 #ifdef LOGS
@@ -939,8 +939,8 @@ int main(int argc, char* argv[]) {
 						kernel_time);
 
 		//================== Gold check
-		if (verbose)
-			printf(",");
+		//if (verbose)
+		//	printf(",");
 
 		time = mysecond();
 

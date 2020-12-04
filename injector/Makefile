@@ -20,7 +20,8 @@ DUMMY=0
 SOURCES=$(wildcard *.cu)
 OBJECTS=$(SOURCES:.cu=.o)
 #ARCH=70
-ARCH= -gencode arch=compute_70,code=[sm_70,compute_70] -gencode arch=compute_35,code=[sm_35,compute_35] 
+#ARCH= -gencode arch=compute_70,code=[sm_70,compute_70] 
+ARCH= -gencode arch=compute_35,code=[sm_35,compute_35] 
 
 NVBIT_TOOL=injector.so
 
@@ -30,7 +31,7 @@ $(NVBIT_TOOL): $(OBJECTS) $(NVBIT_PATH)/libnvbit.a
 	$(NVCC) $(ARCH) -O3 $(OBJECTS) $(LIBS) $(NVCC_PATH) -lcuda -lcudart_static -shared -o $@
 
 %.o: %.cu
-	$(NVCC) -dc -c -std=c++11 $(INCLUDES) -Xptxas -cloning=no -Xcompiler -Wall $(ARCH) -O3 -Xcompiler -fPIC $< -o $@
+	$(NVCC) -DINJECT_RELATIVE_ERROR=$(RAD_RE) -dc -c -std=c++11 $(INCLUDES) -Xptxas -cloning=no -Xcompiler -Wall $(ARCH) -O3 -Xcompiler -fPIC $< -o $@
 
 inject_funcs.o: inject_funcs.cu
 	$(NVCC) -DINJECT_RELATIVE_ERROR=$(RAD_RE) $(INCLUDES) -maxrregcount=16 -Xptxas -astoolspatch --keep-device-functions $(ARCH) -DDUMMY=$(DUMMY) -Xcompiler -Wall -Xcompiler -fPIC -c $< -o $@

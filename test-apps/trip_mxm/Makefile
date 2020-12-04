@@ -63,3 +63,5 @@ golden:
 	sed -i '/Average/c\' golden_stdout.txt
 	sed -i '/time/c\' golden_stdout.txt
 	sed -i '/SIZE/c\' golden_stdout.txt
+	sed -i '/^$$/d' golden_stdout.txt
+

@@ -27,6 +27,7 @@
  */
 #include "flex_grip_error_model.h"
 
+
 // flatten thread id
 __inline__ __device__ int get_flat_tid() {
 	int tid_b = threadIdx.x
@@ -48,8 +49,6 @@ __device__ unsigned int get_mask(uint32_t bitFlipModel, float bitIDSeed,
 			+ (bitFlipModel == RANDOM_VALUE) * (((unsigned int) -1) * bitIDSeed)
 			+ (bitFlipModel == ZERO_VALUE) * oldVal;
 }
-
-
 
 extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 		uint64_t pcounters, uint64_t pverbose_device, int offset, int index,
@@ -153,10 +152,12 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 				if (DUMMY) { // no error is injected
 					inj_info->afterVal = inj_info->beforeVal;
 				} else {
-					if (INJECT_RELATIVE_ERROR == 1 && inj_info->bitFlipModel == RANDOM_VALUE){
-						errorInjected = flex_grip_error_model(inj_info->afterVal, inj_info->beforeVal, index);
+					if (INJECT_RELATIVE_ERROR == 1
+							&& inj_info->bitFlipModel == RANDOM_VALUE) {
+						errorInjected = flex_grip_error_model(inj_info->afterVal, inj_info->beforeVal, index, inj_info->opIDSeed);
 					} else {
-						inj_info->afterVal = inj_info->beforeVal ^ inj_info->mask;
+						inj_info->afterVal = inj_info->beforeVal
+								^ inj_info->mask;
 					}
 					nvbit_write_reg((uint64_t) inj_info->regNo,
 							inj_info->afterVal);

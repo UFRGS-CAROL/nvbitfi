@@ -29,6 +29,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <unordered_set>
+#include <random>
 
 #include "nvbit_tool.h"
 #include "nvbit.h"
@@ -178,6 +179,21 @@ void nvbit_at_init() {
 		printf("nvbit_at_init:end\n");
 }
 
+/**
+ * Function to generate a normal random value
+ */
+void generate_new_random_value() {
+	if (INJECT_RELATIVE_ERROR == 1 && inj_info.bitFlipModel == RANDOM_VALUE) {
+		std::random_device rd { };
+		std::mt19937 gen { rd() };
+
+		// values near the mean are the most likely
+		// standard deviation affects the dispersion of generated values from the mean
+		std::normal_distribution<float> d { 0.0f, 1.0f };
+		inj_info.opIDSeed = d(gen);
+	}
+}
+
 /* Set used to avoid re-instrumenting the same functions multiple times */
 std::unordered_set<CUfunction> already_instrumented;
 
@@ -299,6 +315,9 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 								destGPRNum, destPRNum1, destPRNum2,
 								i->getSass());
 				}
+
+				//Power law error model
+				generate_new_random_value();
 
 				nvbit_insert_call(i, "inject_error", IPOINT_AFTER);
 				nvbit_add_call_arg_const_val64(i, (uint64_t) &inj_info);
