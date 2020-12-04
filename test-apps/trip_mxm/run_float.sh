@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SIZE=128
+SIZE=256
 DATADIR=/home/carol/radiation-benchmarks/data/gemm
 PRECISION=single
 
