@@ -1,6 +1,6 @@
 NVCC=nvcc -ccbin=`which gcc` -D_FORCE_INLINES
 
-RAD_RE=1
+RAD_RE=2
 
 NVCC_VER_REQ=10.1
 NVCC_VER=$(shell $(NVCC) --version | grep release | cut -f2 -d, | cut -f3 -d' ')

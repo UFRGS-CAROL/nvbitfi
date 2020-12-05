@@ -152,7 +152,7 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 				if (DUMMY) { // no error is injected
 					inj_info->afterVal = inj_info->beforeVal;
 				} else {
-					if (INJECT_RELATIVE_ERROR == 1
+					if (INJECT_RELATIVE_ERROR != 0
 							&& inj_info->bitFlipModel == RANDOM_VALUE) {
 						errorInjected = flex_grip_error_model(inj_info->afterVal, inj_info->beforeVal, index, inj_info->opIDSeed);
 					} else {
