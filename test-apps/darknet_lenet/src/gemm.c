@@ -183,7 +183,7 @@ void gemm_gpu(int TA, int TB, int M, int N, int K, float ALPHA,
             (TA ? CUBLAS_OP_T : CUBLAS_OP_N), N, M, K, &ALPHA, B_gpu, ldb, A_gpu, lda, &BETA, C_gpu, ldc);
     check_error(status);
 
-    save_c_matrix_gpu(M, N, K, C_gpu);
+ //   save_c_matrix_gpu(M, N, K, C_gpu);
 }
 
 #include <stdio.h>
