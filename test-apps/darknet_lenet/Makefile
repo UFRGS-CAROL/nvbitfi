@@ -4,10 +4,10 @@ OPENCV=0
 OPENMP=0
 DEBUG=0
 
-ARCH= -gencode arch=compute_30,code=sm_30 \
-      -gencode arch=compute_35,code=sm_35 \
-      -gencode arch=compute_50,code=[sm_50,compute_50] \
-      -gencode arch=compute_52,code=[sm_52,compute_52]
+ARCH= -gencode arch=compute_70,code=sm_70 
+#      -gencode arch=compute_35,code=sm_35 \
+#      -gencode arch=compute_50,code=[sm_50,compute_50] \
+#      -gencode arch=compute_52,code=[sm_52,compute_52]
 #      -gencode arch=compute_20,code=[sm_20,sm_21] \ This one is deprecated?
 
 # This is what I use, uncomment if you know your arch and want to specify
@@ -46,11 +46,10 @@ LDFLAGS+= `pkg-config --libs opencv` -lstdc++
 COMMON+= `pkg-config --cflags opencv` 
 endif
 
-#-lcuda
 ifeq ($(GPU), 1) 
 COMMON+= -DGPU -I/usr/local/cuda/include/
 CFLAGS+= -DGPU
-LDFLAGS+= -L/usr/local/cuda/lib64  -lcudart -lcublas -lcurand
+LDFLAGS+= -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -lcurand
 endif
 
 ifeq ($(CUDNN), 1) 
@@ -59,17 +58,8 @@ CFLAGS+= -DCUDNN
 LDFLAGS+= -lcudnn
 endif
 
-OBJ=gemm.o utils.o cuda.o deconvolutional_layer.o convolutional_layer.o \
-list.o image.o activations.o im2col.o col2im.o blas.o crop_layer.o \
-dropout_layer.o maxpool_layer.o softmax_layer.o data.o matrix.o network.o \
-connected_layer.o cost_layer.o parser.o option_list.o detection_layer.o route_layer.o \
-upsample_layer.o box.o normalization_layer.o avgpool_layer.o layer.o local_layer.o shortcut_layer.o \
-logistic_layer.o activation_layer.o rnn_layer.o gru_layer.o crnn_layer.o demo.o batchnorm_layer.o \
-region_layer.o reorg_layer.o tree.o  lstm_layer.o l2norm_layer.o yolo_layer.o iseg_layer.o image_opencv.o \
-parse_gemm_layer.o
-
-EXECOBJA=captcha.o lsd.o super.o art.o tag.o cifar.o go.o rnn.o segmenter.o regressor.o \
-classifier.o coco.o yolo.o detector.o nightmare.o instance-segmenter.o darknet.o
+OBJ=gemm.o utils.o cuda.o deconvolutional_layer.o convolutional_layer.o list.o image.o activations.o im2col.o col2im.o blas.o crop_layer.o dropout_layer.o maxpool_layer.o softmax_layer.o data.o matrix.o network.o connected_layer.o cost_layer.o parser.o option_list.o detection_layer.o route_layer.o upsample_layer.o box.o normalization_layer.o avgpool_layer.o layer.o local_layer.o shortcut_layer.o logistic_layer.o activation_layer.o rnn_layer.o gru_layer.o crnn_layer.o demo.o batchnorm_layer.o region_layer.o reorg_layer.o tree.o  lstm_layer.o l2norm_layer.o yolo_layer.o iseg_layer.o image_opencv.o
+EXECOBJA=captcha.o lsd.o super.o art.o tag.o cifar.o go.o rnn.o segmenter.o regressor.o classifier.o coco.o yolo.o detector.o nightmare.o instance-segmenter.o darknet.o
 ifeq ($(GPU), 1) 
 LDFLAGS+= -lstdc++ 
 OBJ+=convolutional_kernels.o deconvolutional_kernels.o activation_kernels.o im2col_kernels.o col2im_kernels.o blas_kernels.o crop_layer_kernels.o dropout_layer_kernels.o maxpool_layer_kernels.o avgpool_layer_kernels.o
@@ -79,7 +69,7 @@ EXECOBJ = $(addprefix $(OBJDIR), $(EXECOBJA))
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
 DEPS = $(wildcard src/*.h) Makefile include/darknet.h
 
-all: obj backup results $(SLIB) $(ALIB) $(EXEC) extract
+all: obj backup results $(SLIB) $(ALIB) $(EXEC)
 #all: obj  results $(SLIB) $(ALIB) $(EXEC)
 
 
@@ -113,18 +103,20 @@ results:
 clean:
 	rm -rf $(OBJS) $(SLIB) $(ALIB) $(EXEC) $(EXECOBJ) $(OBJDIR)/*
 
-FULLDIR=/home/carol/NVBITFI/nvbit_release/tools/nvbitfi/test-apps/darknet_lenet
 
-extract:
-	tar xzf data/mnist.tar.gz -C data/
+DARKDIR=/home/carol/NVBITFI/nvbit_release/tools/nvbitfi/test-apps/darknet_lenet
 
-test:
-	./darknet classifier predict cfg/mnist.dataset cfg/mnist_lenet.cfg data/mnist_lenet.weights data/mnist/images/v_00000_c7.png
+train:
+	./darknet classifier train cfg/mnist.data cfg/mnist_lenet.cfg
 
-generate:
-	./darknet classifier predict cfg/mnist.dataset cfg/mnist_lenet.cfg data/mnist_lenet.weights data/mnist/images/v_00000_c7.png
+validate:
+	./darknet classifier valid cfg/mnist.data cfg/mnist_lenet.cfg backup/mnist_lenet.weights
+
+predict:
+	./darknet classifier predict cfg/mnist.data cfg/mnist_lenet.cfg backup/mnist_lenet.weights data/mnist_images/test/44366_One.png
 
 golden:
-	./darknet classifier predict $(FULLDIR)/cfg/mnist.dataset $(FULLDIR)/cfg/mnist_lenet.cfg $(FULLDIR)//data/mnist_lenet.weights $(FULLDIR)/data/mnist/images/v_00000_c7.png > golden_stdout.txt 2> golden_stderr.txt
-	sed -i '/seconds/c\' golden_stdout.txt 
-	sed -i '/seconds/c\' golden_stderr.txt 
+	./darknet classifier predict cfg/mnist.data cfg/mnist_lenet.cfg $(DARKDIR)//backup/mnist_lenet.weights data/mnist_images/test/44366_One.png  >golden_stdout.txt 2>golden_stderr.txt
+	sed -i '/seconds/c\' golden_stdout.txt
+	sed -i '/seconds/c\' golden_stderr.txt
+
