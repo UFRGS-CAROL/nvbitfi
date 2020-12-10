@@ -87,6 +87,21 @@ all_apps = {
         5, # expected runtime
         "" # additional parameters to the run.sh
     ],
+
+    'darknet_lenet': [
+        NVBITFI_HOME + '/test-apps/darknet_lenet', # workload directory
+        'darknet', # binary name
+        NVBITFI_HOME + '/test-apps/darknet_lene/', # path to the binary file
+        5, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
+    'darknet_rubens': [
+        NVBITFI_HOME + '/test-apps/darknet_rubens', # workload directory
+        'darknet', # binary name
+        NVBITFI_HOME + '/test-apps/darknet_rubens/', # path to the binary file
+        5, # expected runtime
+        "" # additional parameters to the run.sh
+    ],
     
     
     'gaussian': [
