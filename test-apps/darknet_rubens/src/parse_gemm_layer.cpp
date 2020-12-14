@@ -103,7 +103,7 @@ void simulate_scheduler_fault(int M, int N, int layer_count_output,
 
 			if (fd.layer_i == layer_count_output) {
 				if (DEBUG >= 1) {
-					std::cout << "DEBUG MIN RELATIVE" << std::endl;
+					std::cout << "DEBUG" << std::endl;
 					std::cout << fd << std::endl;
 				}
 
@@ -200,7 +200,7 @@ void parse_output_conv_layer_gpu(int TA, int TB, int M, int N, int K,
 	}
 
 	case INVALID_OPTION:
-		if (DEBUG == 1)
+		if (DEBUG >= 1)
 			std::cout << "Invalid option\n";
 		break;
 	}
