@@ -54,7 +54,7 @@ __device__ unsigned int get_mask(uint32_t bitFlipModel, float bitIDSeed,
  * and check all threads related to this warp
  */
 __inline__ __device__
-void select_warp(bool& inject_flag){
+void select_warp(inj_info_t *inj_info, bool& inject_flag){
     switch (inj_info->bitFlipModel) {
     case WARP_SINGLE_BIT:
     case WARP_RANDOM_VALUE:
@@ -125,7 +125,7 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 				currCounter1, currCounter2, currCounter3);
 
 	//Check if it is a warp based error model
-	select_warp(injectFlag);
+	select_warp(inj_info, injectFlag);
 	//END my changes ---------------------------------------------------
 	if (injectFlag) {
 		// assert(0 == 10);
