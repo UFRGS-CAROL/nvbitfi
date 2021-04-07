@@ -54,7 +54,7 @@ __device__ unsigned int get_mask(uint32_t bitFlipModel, float bitIDSeed,
  * and check all threads related to this warp
  */
 __inline__ __device__
-bool select_warp(bool inject_flag){
+void select_warp(bool& inject_flag){
     switch (inj_info->bitFlipModel) {
     case WARP_SINGLE_BIT:
     case WARP_RANDOM_VALUE:
@@ -62,8 +62,6 @@ bool select_warp(bool inject_flag){
             // the current opcode matches injIGID and injInstID matches
     	inject_flag = (__any_sync(0xFFFFFFFF, inject_flag) != 0);
     }
-
-    return inject_flag;
 }
 
 extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
@@ -126,16 +124,8 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 		printf("inj_info->instID=%ld, %ld, %ld, %ld\n", inj_info->instID,
 				currCounter1, currCounter2, currCounter3);
 
-	// TODO: Check what is the logic here, before the injectFlag
-	// all the threads are executing, inside the branch only one thread is executing
-	switch (inj_info->bitFlipModel) {
-	case WARP_FLIP_SINGLE_BIT:
-	case WARP_RANDOM_VALUE:
-		// __any() evaluates cond for all active threads of the warp and return non-zero if and only if cond evaluates to non-zero for any of them.
-		// the current opcode matches injIGID and injInstID matches
-		injectFlag = (__any(injectFlag) != 0);
-	}
-
+	//Check if it is a warp based error model
+	select_warp(injectFlag);
 	//END my changes ---------------------------------------------------
 	if (injectFlag) {
 		// assert(0 == 10);
