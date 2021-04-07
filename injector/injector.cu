@@ -183,7 +183,7 @@ void nvbit_at_init() {
  * Function to generate a real uniform random value
  */
 void generate_new_random_value() {
-	if (inj_info->bitFlipModel == FLEXGRIP_RELATIVE_FU || inj_info->bitFlipModel == FLEXGRIP_RELATIVE_PIPELINE) {
+	if (inj_info.bitFlipModel == FLEXGRIP_RELATIVE_FU || inj_info.bitFlipModel == FLEXGRIP_RELATIVE_PIPELINE) {
 		std::random_device rd; //Will be used to obtain a seed for the random number engine
 		std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
 		std::uniform_real_distribution<float> dis(0.0f, 1.0f);
