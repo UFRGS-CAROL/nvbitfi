@@ -54,8 +54,8 @@ __device__ unsigned int get_mask(uint32_t bitFlipModel, float bitIDSeed,
  * and check all threads related to this warp
  */
 __inline__ __device__
-void select_warp(inj_info_t *inj_info, bool& inject_flag){
-    switch (inj_info->bitFlipModel) {
+void select_warp(uint32_t bitFlipModel, bool& inject_flag){
+    switch (bitFlipModel) {
     case WARP_SINGLE_BIT:
     case WARP_RANDOM_VALUE:
             // __any() evaluates cond for all active threads of the warp and return non-zero if and only if cond evaluates to non-zero for any of them.
@@ -125,7 +125,7 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 				currCounter1, currCounter2, currCounter3);
 
 	//Check if it is a warp based error model
-	select_warp(inj_info, injectFlag);
+	select_warp(inj_info->bitFlipModel, injectFlag);
 	//END my changes ---------------------------------------------------
 	if (injectFlag) {
 		// assert(0 == 10);
@@ -158,8 +158,7 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 				inj_info->regNo = destGPRNum + injDestID; // record the register number
 				inj_info->beforeVal = nvbit_read_reg(
 						(uint64_t) inj_info->regNo); // read the register value
-				inj_info->mask = get_mask(inj_info->bitFlipModel,
-						inj_info->bitIDSeed, inj_info->beforeVal); // bit-mask for error injection
+				inj_info->mask = get_mask(inj_info->bitFlipModel, inj_info->bitIDSeed, inj_info->beforeVal); // bit-mask for error injection
 				if (DUMMY) { // no error is injected
 					inj_info->afterVal = inj_info->beforeVal;
 				} else {
