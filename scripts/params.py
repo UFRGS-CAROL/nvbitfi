@@ -188,9 +188,9 @@ inst_value_igid_bfm_map = {
 #   G_GP:   [FLIP_SINGLE_BIT],
 #   G_FP32: [FLIP_SINGLE_BIT],
 
-   G_GP:   [RANDOM_VALUE],
-   G_FP32: [RANDOM_VALUE],
-#   G_LD:   [RANDOM_VALUE]
+   G_GP:   [WARP_SINGLE_BIT],
+   G_FP32: [WARP_SINGLE_BIT],
+   G_LD:   [WARP_SINGLE_BIT]
 
 #  Supported models
 #   G_GP: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
