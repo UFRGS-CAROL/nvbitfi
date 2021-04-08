@@ -241,8 +241,7 @@ enum BitFlipModel {
 	WARP_SINGLE_BIT, // single bit in a warp
 	WARP_RANDOM_VALUE,    // random in a warp
 	//maybe
-//	BLOCK_FLIP_SINGLE_BIT,
-//	BLOCK_RANDOM_VALUE,
+	BLOCK_RANDOM_VALUE,
 	NUM_BFM_TYPES
 };
 

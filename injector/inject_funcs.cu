@@ -67,6 +67,19 @@ void select_warp(uint32_t bitFlipModel, bool& inject_flag) {
 	}
 }
 
+/**
+ * Select block
+ * TODO: not finished feature to
+ * perform a fault injection in all threads
+ * of the block
+ */
+__inline__ __device__
+void select_block(uint32_t bitFlipModel, bool& inject_flag){
+	if (bitFlipModel == BLOCK_RANDOM_VALUE) {
+		inject_flag = __syncthreads_and(inject_flag);
+	}
+}
+
 extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo, uint64_t pcounters,
 		uint64_t pverbose_device, int offset, int index, int grp_index, int destGPRNum, int regval,
 		int numDestGPRs, int destPRNum1, int destPRNum2, int maxRegs) {
@@ -123,8 +136,9 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo, uint64_t p
 		break;
 	}
 
-	//Check if it is a warp based error model
+	//Check if it is a warp/block based error model
 	select_warp(inj_info->bitFlipModel, injectFlag);
+	select_block(inj_info->bitFlipModel, injectFlag);
 	//END my changes ---------------------------------------------------
 
 	if (verbose_device && injectFlag)
