@@ -58,8 +58,10 @@ void select_warp(uint32_t bitFlipModel, bool& inject_flag){
     switch (bitFlipModel) {
     case WARP_SINGLE_BIT:
     case WARP_RANDOM_VALUE:
-            // __any() evaluates cond for all active threads of the warp and return non-zero if and only if cond evaluates to non-zero for any of them.
-            // the current opcode matches injIGID and injInstID matches
+		// __any() evaluates cond for all active threads of the warp
+    	// and return non-zero if and only if cond evaluates to non-zero
+    	// for any of them.
+		// the current opcode matches injIGID and injInstID matches
     	inject_flag = (__any_sync(0xFFFFFFFF, inject_flag) != 0);
     }
 }
@@ -120,13 +122,14 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 		break;
 	}
 
+	//Check if it is a warp based error model
+	select_warp(inj_info->bitFlipModel, injectFlag);
+	//END my changes ---------------------------------------------------
+
 	if (verbose_device && injectFlag)
 		printf("inj_info->instID=%ld, %ld, %ld, %ld\n", inj_info->instID,
 				currCounter1, currCounter2, currCounter3);
 
-	//Check if it is a warp based error model
-	select_warp(inj_info->bitFlipModel, injectFlag);
-	//END my changes ---------------------------------------------------
 	if (injectFlag) {
 		// assert(0 == 10);
 		if (verbose_device)
