@@ -29,24 +29,25 @@
 
 // flatten thread id
 __inline__ __device__ int get_flat_tid() {
-	int tid_b = threadIdx.x
-			+ (blockDim.x * (threadIdx.y + (threadIdx.z * blockDim.y))); // thread id within a block
-	int bid = blockIdx.x
-			+ (gridDim.x * (blockIdx.y + (blockIdx.z * gridDim.y))); // block id
+	int tid_b = threadIdx.x + (blockDim.x * (threadIdx.y + (threadIdx.z * blockDim.y))); // thread id within a block
+	int bid = blockIdx.x + (gridDim.x * (blockIdx.y + (blockIdx.z * gridDim.y))); // block id
 	int tid = tid_b + (bid * blockDim.x * blockDim.y * blockDim.z);
 	return tid;
 }
 
 // Get bit-mask for error injection. Old value will be XORed with this mask later to inject the error. 
 __inline__
-__device__ unsigned int get_mask(uint32_t bitFlipModel, float bitIDSeed,
-		unsigned int oldVal) {
-	return (bitFlipModel == FLIP_SINGLE_BIT)
-			* ((unsigned int) 1 << (int) (32 * bitIDSeed))
-			+ (bitFlipModel == FLIP_TWO_BITS)
-					* ((unsigned int) 3 << (int) (31 * bitIDSeed))
-			+ (bitFlipModel == RANDOM_VALUE) * (((unsigned int) -1) * bitIDSeed)
-			+ (bitFlipModel == ZERO_VALUE) * oldVal;
+__device__ unsigned int get_mask(uint32_t bitFlipModel, float bitIDSeed, unsigned int oldVal) {
+	unsigned bit_mask = (bitFlipModel == FLIP_SINGLE_BIT)
+			* ((unsigned int) 1 << (int) (32 * bitIDSeed));
+	bit_mask += (bitFlipModel == FLIP_TWO_BITS) * ((unsigned int) 3 << (int) (31 * bitIDSeed));
+	bit_mask += (bitFlipModel == RANDOM_VALUE) * (((unsigned int) -1) * bitIDSeed);
+	bit_mask += (bitFlipModel == ZERO_VALUE) * oldVal;
+	// mask for warp values
+	bit_mask += (bitFlipModel == WARP_SINGLE_BIT) * ((unsigned int) 3 << (int) (31 * bitIDSeed));
+	bit_mask += (bitFlipModel == WARP_RANDOM_VALUE) * (((unsigned int) -1) * bitIDSeed);
+
+	return bit_mask;
 }
 
 /**
@@ -54,22 +55,21 @@ __device__ unsigned int get_mask(uint32_t bitFlipModel, float bitIDSeed,
  * and check all threads related to this warp
  */
 __inline__ __device__
-void select_warp(uint32_t bitFlipModel, bool& inject_flag){
-    switch (bitFlipModel) {
-    case WARP_SINGLE_BIT:
-    case WARP_RANDOM_VALUE:
+void select_warp(uint32_t bitFlipModel, bool& inject_flag) {
+	switch (bitFlipModel) {
+	case WARP_SINGLE_BIT:
+	case WARP_RANDOM_VALUE:
 		// __any() evaluates cond for all active threads of the warp
-    	// and return non-zero if and only if cond evaluates to non-zero
-    	// for any of them.
+		// and return non-zero if and only if cond evaluates to non-zero
+		// for any of them.
 		// the current opcode matches injIGID and injInstID matches
-    	inject_flag = (__any_sync(0xFFFFFFFF, inject_flag) != 0);
-    }
+		inject_flag = (__any_sync(0xFFFFFFFF, inject_flag) != 0);
+	}
 }
 
-extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
-		uint64_t pcounters, uint64_t pverbose_device, int offset, int index,
-		int grp_index, int destGPRNum, int regval, int numDestGPRs,
-		int destPRNum1, int destPRNum2, int maxRegs) {
+extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo, uint64_t pcounters,
+		uint64_t pverbose_device, int offset, int index, int grp_index, int destGPRNum, int regval,
+		int numDestGPRs, int destPRNum1, int destPRNum2, int maxRegs) {
 
 	inj_info_t *inj_info = (inj_info_t *) piinfo;
 	uint32_t verbose_device = *((uint32_t *) pverbose_device);
@@ -85,15 +85,16 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 	if (!inj_info->areParamsReady)
 		return; // This is not the selected kernel. No need to proceed.
 
-	unsigned long long currCounter1 = atomicAdd((unsigned long long *) &counters[NUM_ISA_INSTRUCTIONS + grp_index], 1);
-	unsigned long long currCounter2 = atomicAdd((unsigned long long *) &counters[NUM_COUNTERS - 2], (grp_index != G_NODEST));
-	unsigned long long currCounter3 = atomicAdd((unsigned long long *) &counters[NUM_COUNTERS - 1], 1 - ((grp_index == G_NODEST) || (grp_index == G_PR)));
+	unsigned long long currCounter1 = atomicAdd(
+			(unsigned long long *) &counters[NUM_ISA_INSTRUCTIONS + grp_index], 1);
+	unsigned long long currCounter2 = atomicAdd((unsigned long long *) &counters[NUM_COUNTERS - 2],
+			(grp_index != G_NODEST));
+	unsigned long long currCounter3 = atomicAdd((unsigned long long *) &counters[NUM_COUNTERS - 1],
+			1 - ((grp_index == G_NODEST) || (grp_index == G_PR)));
 
 	uint32_t igid = inj_info->groupID;
-	if ((igid == G_GPPR && grp_index == G_NODEST)
-			||  // not a GPPR instruction
-			(igid == G_GP && ((grp_index == G_NODEST) || (grp_index == G_PR)))
-			|| // not the G_GP instructiop
+	if ((igid == G_GPPR && grp_index == G_NODEST) ||  // not a GPPR instruction
+			(igid == G_GP && ((grp_index == G_NODEST) || (grp_index == G_PR))) || // not the G_GP instructiop
 			(igid < G_NODEST && grp_index != igid)) // this is not the instruction from the selected group
 		return; // This is not the selected intruction group
 
@@ -127,14 +128,14 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 	//END my changes ---------------------------------------------------
 
 	if (verbose_device && injectFlag)
-		printf("inj_info->instID=%ld, %ld, %ld, %ld\n", inj_info->instID,
-				currCounter1, currCounter2, currCounter3);
+		printf("inj_info->instID=%ld, %ld, %ld, %ld\n", inj_info->instID, currCounter1,
+				currCounter2, currCounter3);
 
 	if (injectFlag) {
 		// assert(0 == 10);
 		if (verbose_device)
-			printf("offset=0x%x, igid:%d, destGPRNum=%d, grp_index=%d\n",
-					offset, igid, destGPRNum, grp_index);
+			printf("offset=0x%x, igid:%d, destGPRNum=%d, grp_index=%d\n", offset, igid, destGPRNum,
+					grp_index);
 		// We need to randomly select one register from numDestGPRs + (destPRNum1 != -1) + (destPRNum2 != -1)
 		int totalDest = numDestGPRs + (destPRNum1 != -1) + (destPRNum2 != -1);
 		assert(totalDest > 0);
@@ -159,15 +160,17 @@ extern "C" __device__ __noinline__ void inject_error(uint64_t piinfo,
 				inj_info->debug[13] = offset;
 
 				inj_info->regNo = destGPRNum + injDestID; // record the register number
-				inj_info->beforeVal = nvbit_read_reg(
-						(uint64_t) inj_info->regNo); // read the register value
-				inj_info->mask = get_mask(inj_info->bitFlipModel, inj_info->bitIDSeed, inj_info->beforeVal); // bit-mask for error injection
+				inj_info->beforeVal = nvbit_read_reg((uint64_t) inj_info->regNo); // read the register value
+				inj_info->mask = get_mask(inj_info->bitFlipModel, inj_info->bitIDSeed,
+						inj_info->beforeVal); // bit-mask for error injection
 				if (DUMMY) { // no error is injected
 					inj_info->afterVal = inj_info->beforeVal;
 				} else {
 					// Added new error model generated by flexgrip
-					if (inj_info->bitFlipModel == FLEXGRIP_RELATIVE_FU || inj_info->bitFlipModel == FLEXGRIP_RELATIVE_PIPELINE) {
-						errorInjected = flex_grip_error_model(inj_info->afterVal, inj_info->beforeVal, index, inj_info->opIDSeed);
+					if (inj_info->bitFlipModel == FLEXGRIP_RELATIVE_FU
+							|| inj_info->bitFlipModel == FLEXGRIP_RELATIVE_PIPELINE) {
+						errorInjected = flex_grip_error_model(inj_info->afterVal,
+								inj_info->beforeVal, index, inj_info->opIDSeed);
 					} else {
 						inj_info->afterVal = inj_info->beforeVal ^ inj_info->mask;
 					}
