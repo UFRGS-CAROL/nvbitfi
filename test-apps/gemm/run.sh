@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OPNUM=1
+OPNUM=32
 DMR=none
 ALPHA=1.0
 BETA=0.0
