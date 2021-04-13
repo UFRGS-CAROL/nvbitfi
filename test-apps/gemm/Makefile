@@ -6,11 +6,11 @@ OMP=1
 
 ALPHA=1.0
 BETA=0.0
-SIZE?=4096
+SIZE?=256
 ITERATIONS=10
-PRECISION=half
+PRECISION=float
 CUBLAS=0
-TENSOR_CORES=1
+TENSOR_CORES=0
 DMR=none
 BUILDRELATIVEERROR=0
 CHECKBLOCK=1
@@ -50,7 +50,7 @@ LDFLAGS=
 COMMON= 
 CFLAGS= -Wall -Wfatal-errors
 
-RAD_DIR=$(HOME)/radiation-benchmarks
+RAD_DIR=/home/fernando/radiation-benchmarks
 
 INCLUDE=-I$(CUDAPATH)/include -I$(RAD_DIR)/src/cuda/common
 
@@ -128,19 +128,33 @@ generate:
 	./$(TARGET) --size $(SIZE) --generate --verbose \
 			--precision $(PRECISION) --dmr none \
 			--alpha $(ALPHA) --beta $(BETA) \
-			--input_a a_$(OUTPUTPREFIX) \
-			--input_b b_$(OUTPUTPREFIX) \
-			--input_c c_$(OUTPUTPREFIX) \
-			--gold  g_$(OUTPUTPREFIX) $(USECUBLAS) $(USETENSORS)
+			--input_a $(RAD_DIR)/data/gemm/a_$(OUTPUTPREFIX) \
+			--input_b $(RAD_DIR)/data/gemm/b_$(OUTPUTPREFIX) \
+			--input_c $(RAD_DIR)/data/gemm/c_$(OUTPUTPREFIX) \
+			--gold  $(RAD_DIR)/data/gemm/g_$(OUTPUTPREFIX) $(USECUBLAS) $(USETENSORS)
 	
 test:
 	./$(TARGET) --size $(SIZE) --verbose \
 			--precision $(PRECISION) --dmr $(DMR) \
 			--iterations $(ITERATIONS)  \
 			--alpha $(ALPHA) --beta $(BETA) \
-			--input_a a_$(OUTPUTPREFIX) \
-			--input_b b_$(OUTPUTPREFIX) \
-			--input_c c_$(OUTPUTPREFIX) \
-			--gold  g_$(OUTPUTPREFIX)	\
+			--input_a $(RAD_DIR)/data/gemm/a_$(OUTPUTPREFIX) \
+			--input_b $(RAD_DIR)/data/gemm/b_$(OUTPUTPREFIX) \
+			--input_c $(RAD_DIR)/data/gemm/c_$(OUTPUTPREFIX) \
+			--gold  $(RAD_DIR)/data/gemm/g_$(OUTPUTPREFIX)	\
 			--opnum $(CHECKBLOCK) $(USECUBLAS) $(USETENSORS)
 			
+
+golden:
+	./$(TARGET) --size $(SIZE) --verbose \
+			--precision $(PRECISION) --dmr $(DMR) \
+			--iterations $(ITERATIONS)  \
+			--alpha $(ALPHA) --beta $(BETA) \
+			--input_a $(RAD_DIR)/data/gemm/a_$(OUTPUTPREFIX) \
+			--input_b $(RAD_DIR)/data/gemm/b_$(OUTPUTPREFIX) \
+			--input_c $(RAD_DIR)/data/gemm/c_$(OUTPUTPREFIX) \
+			--gold    $(RAD_DIR)/data/gemm/g_$(OUTPUTPREFIX) $(USECUBLAS) $(USETENSORS)  > golden_stdout.txt 2>golden_stderr.txt
+	sed -i '/LOGFILENAME/c\' golden_stdout.txt 
+	sed -i '/Time/c\' golden_stdout.txt 
+	sed -i '/time/c\' golden_stdout.txt 
+	sed -i '/^$$/d' golden_stdout.txt
