@@ -3,6 +3,8 @@
 #include "Parameters.h"
 #include "common.h"
 
+extern std::string get_multi_compiler_header();
+
 Parameters::Parameters(int argc, char** argv) :
 		alpha(1), beta(0) {
 
@@ -39,9 +41,15 @@ Parameters::Parameters(int argc, char** argv) :
 
 	this->triplicated = rad::find_arg(argc, argv, "--triplicated");
 
+	this->check_input_existence = rad::find_arg(argc, argv, "--check_input_existence");
+
 	if (this->generate) {
 		this->iterations = 1;
+	}else{
+		// files must be there already
+		this->check_input_existence = false;
 	}
+
 
 	if (this->use_cublas && this->use_cutlass) {
 		std::cerr
@@ -70,89 +78,73 @@ Parameters::Parameters(int argc, char** argv) :
 	test_info += " use_cublas: " + std::to_string(this->use_cublas);
 	test_info += " use_cutlass: " + std::to_string(this->use_cutlass);
 
+	// Info for compiler test
+	test_info += get_multi_compiler_header();
+//	std::string opt_flags = "";
+//#ifdef NVCCOPTFLAGS
+//	opt_flags += STRING(NVCCOPTFLAGS);
+//#endif
+//	test_info += " nvcc_optimization_flags: " + opt_flags;
 	std::string app = "gemm_tensor_cores_" + this->precision;
-//	set_iter_interval_print(10);
-
-//	start_log_file(const_cast<char*>(app.c_str()),
-//			const_cast<char*>(test_info.c_str()));
-
 	this->log = std::make_shared<rad::Log>(app, test_info);
 }
 
-std::ostream& operator<<(std::ostream& os, const Parameters& log_obj) {
+std::ostream& operator<<(std::ostream& os, const Parameters& parameter) {
 	os << std::boolalpha;
-	os << "Generate: " << log_obj.generate << std::endl;
-	os << "A input path: " << log_obj.a_input_path << std::endl;
-	os << "B input path: " << log_obj.b_input_path << std::endl;
-	os << "C input path: " << log_obj.c_input_path << std::endl;
-	os << "Gold in/out path: " << log_obj.gold_inout_path << std::endl;
-	os << "Iterations: " << log_obj.iterations << std::endl;
-	os << "Matrix size: " << log_obj.size_matrices << std::endl;
-	os << "Precision: " << log_obj.precision << std::endl;
-	os << "Verbose: " << log_obj.verbose << std::endl;
-	os << "DMR type: " << log_obj.dmr << std::endl;
-	os << "Tensor cores: " << log_obj.use_tensor_cores << std::endl;
-	os << "Alpha: " << log_obj.alpha << std::endl;
-	os << "Beta: " << log_obj.beta << std::endl;
-	os << "DMR Block checking " << log_obj.check_block << std::endl;
-	os << "Use cuBLAS: " << log_obj.use_cublas << std::endl;
+	os << "Generate: " << parameter.generate << std::endl;
+	os << "A input path: " << parameter.a_input_path << std::endl;
+	os << "B input path: " << parameter.b_input_path << std::endl;
+	os << "C input path: " << parameter.c_input_path << std::endl;
+	os << "Gold in/out path: " << parameter.gold_inout_path << std::endl;
+	os << "Iterations: " << parameter.iterations << std::endl;
+	os << "Matrix size: " << parameter.size_matrices << std::endl;
+	os << "Precision: " << parameter.precision << std::endl;
+	os << "Verbose: " << parameter.verbose << std::endl;
+	os << "DMR type: " << parameter.dmr << std::endl;
+	os << "Tensor cores: " << parameter.use_tensor_cores << std::endl;
+	os << "Alpha: " << parameter.alpha << std::endl;
+	os << "Beta: " << parameter.beta << std::endl;
+	os << "DMR Block checking " << parameter.check_block << std::endl;
+	os << "Use cuBLAS: " << parameter.use_cublas << std::endl;
+	os << "Will it use the already created matrices (check_input_existence): " <<
+			(parameter.check_input_existence ? "yes" : "no") << std::endl;
 	os << "LOGFILENAME: " << ::get_log_file_name();
 	return os;
 }
 
-//Log::~Log() {
-//#ifdef LOGS
-//	end_log_file();
-//#endif
-//}
-
 void Parameters::end_iteration() {
-//#ifdef LOGS
-//	::end_iteration();
-//#endif
 	this->log->end_iteration();
 }
 
 void Parameters::start_iteration() {
-//#ifdef LOGS
-//	::start_iteration();
-//#endif
 	this->log->start_iteration();
 }
 
-//void Parameters::update_timestamp() {
-////#ifdef LOGS
-////	::update_timestamp();
-////#endif
-//	this->log->update_timestamp();
-//}
-
 void Parameters::log_error(std::string error_detail) {
-//#ifdef LOGS
-//	log_error_detail(const_cast<char*>(error_detail.c_str()));
-//#endif
 	this->log->log_error_detail(error_detail);
 }
 
 void Parameters::log_info(std::string info_detail) {
-//#ifdef LOGS
-//	log_info_detail(const_cast<char*>(info_detail.c_str()));
-//#endif
 	this->log->log_info_detail(info_detail);
 }
 
 void Parameters::update_error_count(long error_count) {
-//#ifdef LOGS
-//	if (error_count)
-//	log_error_count(error_count);
-//#endif
 	this->log->update_errors();
 }
 
 void Parameters::update_info_count(long info_count) {
-//#ifdef LOGS
-//	if (info_count)
-//	log_info_count (info_count);
-//#endif
 	this->log->update_infos();
+}
+
+void Parameters::usage(char** argv){
+		std::cout << "./" << argv[0]
+				<< " --generate --gold <gold file, DEFAULT=./gold.matrix > \n"
+						"--size <matrix size, DEFAULT=8192> \n"
+						"--iterations <how many iterations, optional> \n"
+						"--input_a <input A, DEFAUL=./input_a.matrix> \n"
+						"--input_b <input B, DEFAUL=./input_b.matrix> \n"
+						"--input_c <input C, DEFAUL=./input_c.matrix>  \n"
+						"--precision <float/double, DEFAULT=float> \n"
+						"--check_input_existence"
+				<< std::endl;
 }

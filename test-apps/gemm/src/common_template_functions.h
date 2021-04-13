@@ -21,6 +21,12 @@
 #include <omp.h>
 #endif
 
+#if (__CUDACC_VER_MAJOR__ <= 7)
+#include "../../mxm/half.hpp"
+
+using half = half_float::half;
+#endif
+
 #define CHAR_CAST(x) (reinterpret_cast<char*>(x))
 #define GENERATOR_MAXABSVALUE_GEMM 10
 #define GENERATOR_MINABSVALUE_GEMM -GENERATOR_MAXABSVALUE_GEMM
@@ -57,17 +63,17 @@ bool write_to_file(std::string& path, std::vector<T>& array) {
 
 static bool exists(std::string& path) {
 	std::ifstream input(path);
-	auto exists = input.good();
+	auto file_exists = input.good();
 	input.close();
-	return exists;
+	return file_exists;
 }
 
 template<typename half_t, typename real_t>
-void write_gold(std::vector<half_t>& a_vector, std::vector<half_t>& b_vector,
-		std::vector<real_t>& c_vector, std::vector<real_t>& d_vector,
-		std::string& a_file_path, std::string& b_file_path,
-		std::string& c_file_path, std::string& d_file_path) {
-
+void write_abc_files(
+		std::string& a_file_path, std::vector<half_t>& a_vector,
+		std::string& b_file_path, std::vector<half_t>& b_vector,
+		std::string& c_file_path, std::vector<real_t>& c_vector
+		) {
 	if (write_to_file(a_file_path, a_vector) == false) {
 		throw_line(a_file_path + " could not be written\n");
 	}
@@ -79,45 +85,51 @@ void write_gold(std::vector<half_t>& a_vector, std::vector<half_t>& b_vector,
 	if (write_to_file(c_file_path, c_vector) == false) {
 		throw_line(c_file_path + " could not be written\n");
 	}
+}
 
+template<typename half_t, typename real_t>
+void read_abc_files(
+		std::string& a_file_path, std::vector<half_t>& a_vector,
+		std::string& b_file_path, std::vector<half_t>& b_vector,
+		std::string& c_file_path, std::vector<real_t>& c_vector
+		) {
+	if (read_from_file(a_file_path, a_vector) == false) {
+		throw_line(a_file_path + " could not be read\n");
+	}
+	if (read_from_file(b_file_path, b_vector) == false) {
+		throw_line(b_file_path + " could not be read\n");
+	}
+	if (read_from_file(c_file_path, c_vector) == false) {
+		throw_line(c_file_path + " could not be read\n");
+	}
+}
+
+
+template<typename real_t>
+void write_gold(std::string& d_file_path, std::vector<real_t>& d_vector) {
 	if (write_to_file(d_file_path, d_vector) == false) {
 		throw_line(d_file_path + " could not be written\n");
 	}
 }
 
-template<typename half_t, typename real_t>
-void read_gold(std::vector<half_t>& a_vector, std::vector<half_t>& b_vector,
-		std::vector<real_t>& c_vector, std::vector<real_t>& d_vector,
-		std::string& a_file_path, std::string& b_file_path,
-		std::string& c_file_path, std::string& d_file_path) {
-
-	if (read_from_file(a_file_path, a_vector) == false) {
-		throw_line(a_file_path + " could not be read\n");
-	}
-
-	if (read_from_file(b_file_path, b_vector) == false) {
-		throw_line(b_file_path + " could not be read\n");
-	}
-
-	if (read_from_file(c_file_path, c_vector) == false) {
-		throw_line(c_file_path + " could not be read\n");
-	}
-
+template<typename real_t>
+void read_gold(std::string& d_file_path, std::vector<real_t>& d_vector) {
 	if (read_from_file(d_file_path, d_vector) == false) {
 		throw_line(d_file_path + " could not be read\n");
 	}
 }
 
-template<typename half_t, typename real_t>
-void generate_input_matrices(size_t matrix_size, std::vector<half_t>& a_vector,
+template<typename half_t, typename real_t, const bool TENSOR_INPUT = false>
+void get_input_matrices(size_t matrix_size, std::vector<half_t>& a_vector,
 		std::vector<half_t>& b_vector, std::vector<real_t>& c_vector,
-		const bool tensor_input = false) {
+		std::string& a_file_path, std::string& b_file_path,
+		std::string& c_file_path, const bool read_abc = false) {
 
 	std::random_device rd; //Will be used to obtain a seed for the random number engine
 	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
 	double min_val = GENERATOR_MINABSVALUE_GEMM;
 	double max_val = GENERATOR_MAXABSVALUE_GEMM;
-	if (tensor_input) {
+	if (TENSOR_INPUT) {
 		min_val = GENERATOR_MINABSVALUE_TENSOR;
 		max_val = GENERATOR_MAXABSVALUE_TENSOR;
 	}
@@ -127,11 +139,25 @@ void generate_input_matrices(size_t matrix_size, std::vector<half_t>& a_vector,
 	b_vector.resize(matrix_size * matrix_size);
 	c_vector.resize(matrix_size * matrix_size);
 
+	if (read_abc == false) {
 #pragma omp parallel for
-	for (size_t i = 0; i < matrix_size * matrix_size; i++) {
-		a_vector[i] = half_t(dis(gen));
-		b_vector[i] = half_t(dis(gen));
-		c_vector[i] = real_t(dis(gen));
+		for (size_t i = 0; i < matrix_size * matrix_size; i++) {
+			a_vector[i] = half_t(dis(gen));
+			b_vector[i] = half_t(dis(gen));
+			c_vector[i] = real_t(dis(gen));
+		}
+
+		write_abc_files(
+				a_file_path, a_vector,
+				b_file_path, b_vector,
+				c_file_path, c_vector);
+
+	} else {
+		read_abc_files(
+				a_file_path, a_vector,
+				b_file_path, b_vector,
+				c_file_path, c_vector
+				);
 	}
 }
 
@@ -157,7 +183,6 @@ bool equals(real_t& lhs, real_t& rhs, const uint32_t threshold = 0) {
 static bool equals(half& lhs, half& rhs, const uint32_t threshold = 0) {
 	return float(lhs) == float(rhs);
 }
-
 
 static std::ostream& operator<<(std::ostream& os, half &rhs) {
 	os << float(rhs);
@@ -207,7 +232,7 @@ void debug_mxm(std::vector<t>& a, std::vector<t>& b, std::vector<t> c,
 template<class half_t, class real_t>
 std::pair<int, int> check_output_errors_dmr(std::vector<real_t>& gold,
 		std::vector<real_t>& real_vector, std::vector<half_t>& half_vector,
-		Parameters& log, const uint32_t threshold, const bool dmr) {
+		Parameters& parameter, const uint32_t threshold, const bool dmr) {
 	uint32_t host_errors = 0;
 	uint32_t memory_errors = 0;
 
@@ -233,19 +258,19 @@ std::pair<int, int> check_output_errors_dmr(std::vector<real_t>& gold,
 
 			std::stringstream error_detail("");
 			error_detail << std::setprecision(20) << std::scientific;
-			error_detail << "p: [" << int(floor(i / log.size_matrices)) << ", "
-					<< i % log.size_matrices << "], r: ";
+			error_detail << "p: [" << int(floor(i / parameter.size_matrices)) << ", "
+					<< i % parameter.size_matrices << "], r: ";
 			error_detail << full_precision;
 			error_detail << ", e: " << gold_value << " smaller_precision: "
 					<< half_precision;
 
-			if (log.verbose && (host_errors < 10)) {
+			if (parameter.verbose && (host_errors < 10)) {
 				std::cout << error_detail.str() << std::endl;
 
 				std::cout << is_output_diff << " " << !dmr_equals << std::endl;
 			}
 
-			log.log_error(error_detail.str());
+			parameter.log_error(error_detail.str());
 			host_errors++;
 			if (is_output_diff && dmr_equals && dmr) {
 				memory_errors++;
@@ -261,14 +286,14 @@ std::pair<int, int> check_output_errors_dmr(std::vector<real_t>& gold,
 	if (dmr_err != 0) {
 		std::string error_detail;
 		error_detail = "detected_dmr_errors: " + std::to_string(dmr_err);
-		log.log_info(error_detail);
+		parameter.log_info(error_detail);
 	}
 
 	if (memory_errors != 0) {
-		log.log_info("dmr1_equals_dmr2_detected");
+		parameter.log_info("dmr1_equals_dmr2_detected");
 	}
 
-	log.update_error_count(host_errors);
+	parameter.update_error_count(host_errors);
 	if (host_errors != 0)
 		std::cout << "#";
 

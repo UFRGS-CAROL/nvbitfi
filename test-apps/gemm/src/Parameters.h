@@ -27,6 +27,8 @@ struct Parameters {
 
 	void start_iteration();
 
+	void usage(char **argv);
+
 //	void update_timestamp();
 	void log_error(std::string error_detail);
 	void log_info(std::string info_detail);
@@ -46,12 +48,14 @@ struct Parameters {
 	bool use_tensor_cores;
 	bool triplicated;
 	std::string dmr;
-	double alpha;
-	double beta;
+	float alpha;
+	float beta;
 	bool use_cublas;
 	bool use_cutlass;
 
 	uint32_t check_block;
+
+	bool check_input_existence;
 
 private:
 	std::shared_ptr<rad::Log> log;
