@@ -112,7 +112,7 @@ $(OBJDIR)%.o: %.cpp $(DEPS)
 	$(CXX) $(COMMON) $(CFLAGS) -c $< -o $@ $(INCLUDE) 
 
 $(OBJDIR)%.o: %.cu $(DEPS)
-	$(NVCC) -ccbin $(CXX) $(ARCH) $(COMMON) $(NVCCFLAGS) $(INCLUDE) -c $< -o $@ 
+	$(NVCC) -ccbin $(CXX) $(ARCH) $(COMMON) $(NVCCFLAGS) $(INCLUDE)  --compiler-options="-DNVCCOPTFLAGS=$(NVCCOPTFLAGS)"  -c $< -o $@ 
 
 
 obj:
