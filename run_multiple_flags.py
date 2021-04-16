@@ -11,7 +11,7 @@ def execute(cmd):
 
 
 def main():
-    injections = 1000
+    injections = 1
     current_cwd = os.getcwd()
     flags = ["--maxrregcount=16", "-Xptxas --allow-expensive-optimizations=true", "--use_fast_math"]
     benchmarks = {"gemm"}
@@ -30,7 +30,7 @@ def main():
                 tar_cmd = f"tar czf {flag_parsed}_{opt_o}_{bench}_nvbitfi_{injections}k.tar.gz "
                 tar_cmd += "logs_sdcs_* logs /var/radiation-benchmarks/log/"
                 execute(tar_cmd)
-                execute("rm - rf /var/radiation-benchmarks/log/*.log logs/* *.csv")
+                execute("rm -rf /var/radiation-benchmarks/log/*.log logs/* *.csv")
 
 
 if __name__ == '__main__':
