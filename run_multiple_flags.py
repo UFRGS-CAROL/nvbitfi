@@ -22,15 +22,15 @@ def main():
                 opt_o = f"O{opt}"
                 execute(f"make -C test-apps/{bench} clean")
                 execute(f'make -C test-apps/{bench} NVCCOPTFLAGS="{flag}" OPT=-{opt_o}')
-                # execute("make -C test-apps/{bench} generate")
-                # execute("make -C test-apps/{bench} test")
-                #
-                # execute(f"./run.sh {bench} {injections}")
-                # flag_parsed = re.sub("-*=*", "", flag)
-                # tar_cmd = f"tar czf {flag_parsed}_{opt_o}_{bench}_nvbitfi_{injections}k.tar.gz "
-                # tar_cmd += "logs_sdcs_* logs /var/radiation-benchmarks/log/"
-                # execute(tar_cmd)
-                # execute("rm - rf /var/radiation-benchmarks/log/*.log logs/* *.csv")
+                execute(f"make -C test-apps/{bench} generate")
+                execute(f"make -C test-apps/{bench} test")
+
+                execute(f"./run_injections.sh {bench} {injections}")
+                flag_parsed = re.sub("-*=*", "", flag)
+                tar_cmd = f"tar czf {flag_parsed}_{opt_o}_{bench}_nvbitfi_{injections}k.tar.gz "
+                tar_cmd += "logs_sdcs_* logs /var/radiation-benchmarks/log/"
+                execute(tar_cmd)
+                execute("rm - rf /var/radiation-benchmarks/log/*.log logs/* *.csv")
 
 
 if __name__ == '__main__':
