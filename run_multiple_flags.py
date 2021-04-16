@@ -26,7 +26,7 @@ def main():
                 execute(f"make -C test-apps/{bench} test")
 
                 execute(f"./run_injections.sh {bench} {injections}")
-                flag_parsed = re.sub("-*=*", "", flag)
+                flag_parsed = re.sub("-*=*[ ]*", "", flag)
                 tar_cmd = f"tar czf {flag_parsed}_{opt_o}_{bench}_nvbitfi_{injections}k.tar.gz "
                 tar_cmd += "logs_sdcs_* logs /var/radiation-benchmarks/log/"
                 execute(tar_cmd)
