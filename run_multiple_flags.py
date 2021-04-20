@@ -12,13 +12,14 @@ def execute(cmd):
 
 def main():
     injections = 1
-    current_cwd = os.getcwd()
-    flags = ["--maxrregcount=16", "-Xptxas --allow-expensive-optimizations=true", "--use_fast_math"]
-    benchmarks = {"gemm"}
-
-    for flag in flags:
-        for bench in benchmarks:
-            for opt in range(1, 3):
+    flags = ["", "--maxrregcount=16", "-Xptxas --allow-expensive-optimizations=true", "--use_fast_math"]
+    o_opt = ["", 0, 1, 2, 3, "fast"]
+    benchmarks = {
+        "gemm", "hotspot"
+    }
+    for bench in benchmarks:
+        for flag in flags:
+            for opt in o_opt:
                 opt_o = f"O{opt}"
                 execute(f"make -C test-apps/{bench} clean")
                 execute(f'make -C test-apps/{bench} NVCCOPTFLAGS="{flag}" OPT=-{opt_o}')
