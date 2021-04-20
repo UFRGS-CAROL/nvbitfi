@@ -13,7 +13,7 @@ def execute(cmd):
 def main():
     injections = 1
     flags = ["", "--maxrregcount=16", "-Xptxas --allow-expensive-optimizations=true", "--use_fast_math"]
-    o_opt = ["", 0, 1, 2, 3, "fast"]
+    o_opt = [0, 1, 2, 3]
     benchmarks = {
         "gemm", "hotspot"
     }
