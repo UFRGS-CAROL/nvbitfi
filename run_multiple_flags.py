@@ -15,14 +15,15 @@ def main():
     flags = ["", "--maxrregcount=16", "-Xptxas --allow-expensive-optimizations=true", "--use_fast_math"]
     o_opt = [0, 1, 2, 3]
     benchmarks = {
-        "gemm", "hotspot"
+        "gemm", "hotspot", "lava_mp"
     }
     for bench in benchmarks:
         for flag in flags:
             for opt in o_opt:
                 opt_o = f"O{opt}"
+                nvcc_flags = f'NVCCOPTFLAGS="{flag} -Xptxas -{opt_o}"'
                 execute(f"make -C test-apps/{bench} clean")
-                execute(f'make -C test-apps/{bench} NVCCOPTFLAGS="{flag}" OPT=-{opt_o}')
+                execute(f'make -C test-apps/{bench} {nvcc_flags}')
                 execute(f"make -C test-apps/{bench} generate")
                 execute(f"make -C test-apps/{bench} test")
 
