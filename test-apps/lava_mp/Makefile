@@ -22,10 +22,11 @@ RELATIVEERROR=0
 VPATH=./src
 CUDAPATH=/usr/local/cuda
 NVCC=$(CUDAPATH)/bin/nvcc
-NVCCFLAGS= -std=c++11 -O3 -Xptxas -v
+NVCCFLAGS= -std=c++11 -Xptxas -v
 
-ARCH= -gencode arch=compute_35,code=[sm_35,compute_35] #Kepler
-ARCH+= -gencode arch=compute_70,code=[sm_70,compute_70] #Titan V
+# Kepler, Volta
+SMS= 35 70
+$(foreach sm,$(SMS),$(eval ARCH += -gencode arch=compute_$(sm),code=sm_$(sm)))
 
 INCLUDE= -I./src -I$(CUDAPATH)/include -I$(RAD)/src/include -I$(RAD)/src/cuda/common
 
@@ -52,6 +53,9 @@ LDFLAGS+= -L$(CUDAPATH)/lib64  -lcudart  -lcurand
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
 DEPS = $(wildcard src/*.h) Makefile
 
+# It is necessary to multi compiler analysis
+PASSHOSTCC= -DNVCCOPTFLAGS="$(strip $(patsubst %-Xptxas,%,$(NVCCOPTFLAGS)))"
+NVCCFLAGS+= -Xptxas -v $(NVCCOPTFLAGS) --optimize 3 $(PASSHOSTCC)
 
 all: mkdir $(EXEC)
 
@@ -63,7 +67,7 @@ $(OBJDIR)%.o: %.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@ $(INCLUDE)
 	
 $(OBJDIR)%.o: %.cu $(DEPS)
-	$(NVCC) $(ARCH) $(NVCCFLAGS) -c $< -o $@ $(INCLUDE) 
+	$(NVCC) -ccbin $(CXX) $(ARCH) $(NVCCFLAGS) -c $< -o $@ $(INCLUDE) 
 
 mkdir:
 	mkdir -p $(OBJDIR)
