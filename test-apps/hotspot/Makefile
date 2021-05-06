@@ -19,6 +19,10 @@ NVCC_FLAGS = $(PRECISION) $(LOG_FLAGS) -ccbin $(CXX) -Xptxas -v -I$(CUDA_BASE_DI
 LINK_FLAGS = -std=c++11 $(GENCODE) -lcudart -lcudadevrt $(EXTRA_LINK_FLAGS)
 
 NVCC_FLAGS+= -Xptxas -v $(NVCCOPTFLAGS) $(OPT)
+# TODO: verify this code
+NVCC_FLAGS+= -DNVCCOPTFLAGS="$(strip $(patsubst %-Xptxas,%,$(NVCCOPTFLAGS)))"  
+# Host must be always at maximum opt
+NVCC_FLAGS+= --optimize 3
 
 CUDA_LIB_DIR=$(CUDA_BASE_DIR)/lib64
 
