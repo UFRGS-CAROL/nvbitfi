@@ -1,4 +1,4 @@
-# Original
+# Original repository
 This code was copied from [https://github.com/GokulNC/DarkNet-Classifier-LeNet-MNIST]
 
 # DarkNet Classifier LeNet MNIST
