@@ -4,7 +4,7 @@ OPNUM=32
 DMR=none
 ALPHA=1.0
 BETA=0.0
-SIZE=256
+SIZE=512
 DATADIR=/home/fernando/radiation-benchmarks/data/gemm
 
 CUBLAS=0
