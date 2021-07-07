@@ -11,8 +11,8 @@ CUBLAS=0
 PRECISION=float
 CUDAPATH=/usr/local/cuda
 if [ $# -gt 0 ]; then
-  PRECISION=$1
-  CUDAPATH=$2
+  CUDAPATH=$1
+  PRECISION=$2
   CUBLAS=$3
   if [ $CUBLAS -eq 1 ]; then
     USECUBLAS=--use_cublas

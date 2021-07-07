@@ -30,7 +30,7 @@ all_apps = {
         'gemm',  # binary name
         NVBITFI_HOME + '/test-apps/gemm/',  # path to the binary file
         5,  # expected runtime
-        f"{ADDITIONAL_PARAMETERS}"  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'bfs': [
