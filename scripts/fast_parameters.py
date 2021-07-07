@@ -7,6 +7,7 @@ benchmark = environ['BENCHMARK']
 NVBITFI_HOME = environ['NVBITFI_HOME']
 THRESHOLD_JOBS = int(environ['FAULTS'])
 ADDITIONAL_PARAMETERS = environ['ADDITIONAL_PARAMETERS']
+
 all_apps = {
     'simple_add': [
         NVBITFI_HOME + '/test-apps/simple_add',  # workload directory
