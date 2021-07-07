@@ -29,10 +29,10 @@ import fast_parameters as fp
 
 PYTHON_P = "python"
 
-TIMEOUT_THRESHOLD = 10 # 10X usual runtime 
+TIMEOUT_THRESHOLD = 10  # 10X usual runtime
 
 if 'NVBITFI_HOME' not in os.environ:
-    print ("Error: Please set NVBITFI_HOME environment variable")
+    print("Error: Please set NVBITFI_HOME environment variable")
     sys.exit(-1)
 NVBITFI_HOME = os.environ['NVBITFI_HOME']
 
@@ -62,26 +62,24 @@ keep_logs = True
 # campaign. This is essentially the maximum number of injections one can run
 # per instruction group (IGID) and bit-flip model (BFM).
 # 
-#NUM_INJECTIONS = 644
+# NUM_INJECTIONS = 644
 NUM_INJECTIONS = 1000
 
 # Specify how many injections you want to perform per IGID and BFM combination. 
 # Only the first THRESHOLD_JOBS will be selected from the generated NUM_INJECTIONS.
 #
 # THRESHOLD_JOBS = 384
-#THRESHOLD_JOBS = 1000
+# THRESHOLD_JOBS = 1000
 THRESHOLD_JOBS = fp.THRESHOLD_JOBS
 
 # THRESHOLD_JOBS sould be <= NUM_INJECTIONS
 assert THRESHOLD_JOBS <= NUM_INJECTIONS
-
 
 #######################################################################
 # Specify library paths
 #######################################################################
 INJECTOR_LIB = os.environ['NVBITFI_HOME'] + "/injector/injector.so"
 PROFILER_LIB = os.environ['NVBITFI_HOME'] + "/profiler/profiler.so"
-
 
 #######################################################################
 # Three injection modes
@@ -98,14 +96,13 @@ G_FP64 = 0
 G_FP32 = 1
 G_LD = 2
 G_PR = 3
-G_NODEST = 4 # not really an igid
-G_OTHERS = 5 
-G_GPPR = 6 # instructions that write to either a GPR or a PR register
-G_GP = 7 # instructions that write to a GPR register
+G_NODEST = 4  # not really an igid
+G_OTHERS = 5
+G_GPPR = 6  # instructions that write to either a GPR or a PR register
+G_GP = 7  # instructions that write to a GPR register
 NUM_INST_GROUPS = 8
 
-IGID_STR = [ "fp64", "fp32", "ld", "pr", "nodest", "others", "gppr", "gp" ]
-
+IGID_STR = ["fp64", "fp32", "ld", "pr", "nodest", "others", "gppr", "gp"]
 
 #######################################################################
 # Types of avaialble error models (bit-flip model, BFM): This should match the
@@ -120,10 +117,10 @@ FLEXGRIP_RELATIVE_PIPELINE = 5
 WARP_SINGLE_BIT = 6
 WARP_RANDOM_VALUE = 7
 EM_STR = [
- "FLIP_SINGLE_BIT", "FLIP_TWO_BITS", "RANDOM_VALUE", "ZERO_VALUE",  # Original error models
- "FLEXGRIP_RELATIVE_FU", "FLEXGRIP_RELATIVE_PIPELINE", # Flexgrip based error models
- "WARP_SINGLE_BIT",  "WARP_RANDOM_VALUE" # multiple error model
- ]
+    "FLIP_SINGLE_BIT", "FLIP_TWO_BITS", "RANDOM_VALUE", "ZERO_VALUE",  # Original error models
+    "FLEXGRIP_RELATIVE_FU", "FLEXGRIP_RELATIVE_PIPELINE",  # Flexgrip based error models
+    "WARP_SINGLE_BIT", "WARP_RANDOM_VALUE"  # multiple error model
+]
 
 rf_inst = ""
 
@@ -137,40 +134,39 @@ MASKED_OTHER = 3
 
 # DUEs
 TIMEOUT = 4
-NON_ZERO_EC = 5 # non zero exit code
+NON_ZERO_EC = 5  # non zero exit code
 
 # Potential DUEs with appropriate detectors in place
 MASKED_KERNEL_ERROR = 6
 SDC_KERNEL_ERROR = 7
-NON_ZERO_EM = 8 # non zero error message (stderr is different)
+NON_ZERO_EM = 8  # non zero error message (stderr is different)
 STDOUT_ERROR_MESSAGE = 9
 STDERR_ONLY_DIFF = 10
 DMESG_STDERR_ONLY_DIFF = 11
 DMESG_STDOUT_ONLY_DIFF = 12
 DMESG_OUT_DIFF = 13
-DMESG_APP_SPECIFIC_CHECK_FAIL= 14
+DMESG_APP_SPECIFIC_CHECK_FAIL = 14
 DMESG_XID_43 = 15
 
 # SDCs
 STDOUT_ONLY_DIFF = 16
 OUT_DIFF = 17
-APP_SPECIFIC_CHECK_FAIL= 18
+APP_SPECIFIC_CHECK_FAIL = 18
 
 OTHERS = 19
 NUM_CATS = 20
 
 CAT_STR = ["Masked: Error was never read", "Masked: Write before read",
-"Masked: other reasons", "DUE: Timeout", "DUE: Non Zero Exit Status", 
-"Pot DUE: Masked but Kernel Error", "Pot DUE: SDC but Kernel Error", 
-"Pot DUE: Different Error Message", "Pot DUE: Error Message in Standard Output", 
-"Pot DUE: Stderr is different", "Pot DUE:Stderr is different, but dmesg recorded", 
-"Pot DUE: Standard output is different, but dmesg recorded", 
-"Pot DUE: Output file is different, but dmesg recorded", 
-"Pot DUE: App specific check failed, but dmesg recorded",
-"Pot DUE: Xid 43 recorded in dmesg",
-"SDC: Standard output is different", "SDC: Output file is different", 
-"SDC: App specific check failed", "Uncategorized"]
-
+           "Masked: other reasons", "DUE: Timeout", "DUE: Non Zero Exit Status",
+           "Pot DUE: Masked but Kernel Error", "Pot DUE: SDC but Kernel Error",
+           "Pot DUE: Different Error Message", "Pot DUE: Error Message in Standard Output",
+           "Pot DUE: Stderr is different", "Pot DUE:Stderr is different, but dmesg recorded",
+           "Pot DUE: Standard output is different, but dmesg recorded",
+           "Pot DUE: Output file is different, but dmesg recorded",
+           "Pot DUE: App specific check failed, but dmesg recorded",
+           "Pot DUE: Xid 43 recorded in dmesg",
+           "SDC: Standard output is different", "SDC: Output file is different",
+           "SDC: App specific check failed", "Uncategorized"]
 
 #########################################################################
 # Error model: Plese refer to the NVBITFI user guide to see a description of 
@@ -184,22 +180,21 @@ CAT_STR = ["Masked: Error was never read", "Masked: Write before read",
 # Used for instruction output-level value injection runs 
 # G_GPPR and G_GP should be equivalent because we do not inject into predicate regiters in this release. 
 inst_value_igid_bfm_map = {
-   #G_FP64: [FLIP_SINGLE_BIT],
-#   G_GP:   [FLIP_SINGLE_BIT],
-#   G_FP32: [FLIP_SINGLE_BIT],
+    G_GP: [FLIP_SINGLE_BIT],
+    G_FP32: [FLIP_SINGLE_BIT],
+    G_LD: [FLIP_SINGLE_BIT]
 
-   G_GP:   [WARP_SINGLE_BIT],
-   G_FP32: [WARP_SINGLE_BIT],
-   G_LD:   [WARP_SINGLE_BIT]
+    # G_GP:   [WARP_SINGLE_BIT],
+    # G_FP32: [WARP_SINGLE_BIT],
+    # G_LD:   [WARP_SINGLE_BIT]
 
-#  Supported models
-#   G_GP: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
-#   G_FP64: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
-#   G_FP32: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
-#   G_LD: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE] 
+    #  Supported models
+    #   G_GP: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
+    #   G_FP64: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
+    #   G_FP32: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
+    #   G_LD: [FLIP_SINGLE_BIT, FLIP_TWO_BITS, RANDOM_VALUE, ZERO_VALUE]
 
 }
-
 
 #########################################################################
 # List of apps 
@@ -225,21 +220,24 @@ parse_apps = apps
 #########################################################################
 # Set paths for application binary, run script, etc. 
 #########################################################################
-app_log_dir = {} 
-script_dir = {} 
+app_log_dir = {}
+script_dir = {}
 bin_dir = {}
 app_dir = {}
 app_data_dir = {}
-def set_paths(): 
-    merged_apps = apps # merge the two dictionaries 
-    merged_apps.update(parse_apps) 
-    
+
+
+def set_paths():
+    merged_apps = apps  # merge the two dictionaries
+    merged_apps.update(parse_apps)
+
     for app in merged_apps:
         app_log_dir[app] = NVBITFI_HOME + "/logs/" + app + "/"
         bin_dir[app] = merged_apps[app][2]
         app_dir[app] = merged_apps[app][0]
         script_dir[app] = merged_apps[app][0]
         app_data_dir[app] = merged_apps[app][0]
+
 
 set_paths()
 
@@ -263,4 +261,3 @@ special_sdc_check_log = "special_check.log"
 NUM_GPUS = 1
 
 use_filelock = False
-
