@@ -19,7 +19,7 @@ if [ $# -gt 0 ]; then
   fi
 fi
 
-eval LD_LIBRARY_PATH=${CUDAPATH}/lib64:$LD_LIBRARY_PATH ${PRELOAD_FLAG} ${BIN_DIR}/gemm ${USECUBLAS} --size ${SIZE} --precision ${PRECISION} --dmr ${DMR} --iterations 1 --alpha ${ALPHA} --beta ${BETA} --input_a ${DATADIR}/a_float_${ALPHA}_${BETA}_${SIZE}_cublas_${CUBLAS}_tensor_0.matrix --input_b ${DATADIR}/b_float_${ALPHA}_${BETA}_${SIZE}_cublas_${CUBLAS}_tensor_0.matrix --input_c ${DATADIR}/c_float_${ALPHA}_${BETA}_${SIZE}_cublas_${CUBLAS}_tensor_0.matrix --gold ${DATADIR}/g_float_${ALPHA}_${BETA}_${SIZE}_cublas_${CUBLAS}_tensor_0.matrix --opnum ${OPNUM} --verbose >stdout.txt 2>stderr.txt
+eval LD_LIBRARY_PATH=${CUDAPATH}/lib64:$LD_LIBRARY_PATH ${PRELOAD_FLAG} ${BIN_DIR}/gemm ${USECUBLAS} --size ${SIZE} --precision ${PRECISION} --dmr ${DMR} --iterations 1 --alpha ${ALPHA} --beta ${BETA} --input_a ${DATADIR}/a_${PRECISION}_${ALPHA}_${BETA}_${SIZE}_cublas_${CUBLAS}_tensor_0.matrix --input_b ${DATADIR}/b_${PRECISION}_${ALPHA}_${BETA}_${SIZE}_cublas_${CUBLAS}_tensor_0.matrix --input_c ${DATADIR}/c_${PRECISION}_${ALPHA}_${BETA}_${SIZE}_cublas_${CUBLAS}_tensor_0.matrix --gold ${DATADIR}/g_${PRECISION}_${ALPHA}_${BETA}_${SIZE}_cublas_${CUBLAS}_tensor_0.matrix --opnum ${OPNUM} --verbose >stdout.txt 2>stderr.txt
 
 sed -i '/LOGFILENAME/c\' stdout.txt
 sed -i '/Time/c\' stdout.txt
