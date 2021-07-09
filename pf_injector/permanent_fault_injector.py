@@ -114,9 +114,6 @@ def inject_permanent_faults(error_list, path_to_pf_lib, app_cmd):
         execute_cmd(cmd=compact_fault)
         execute_cmd(cmd=f"rm  {fault_output_file} {output_log} {nvbit_injection_info}")
 
-        if fault_id == 10:
-            break
-
 
 def main():
     """
