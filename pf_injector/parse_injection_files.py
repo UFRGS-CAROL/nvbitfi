@@ -42,9 +42,8 @@ def main():
                         datefmt='%m/%d/%Y %H:%M:%S')
 
     df = untar_and_process_files()
-    df_sum = df.groupby(["sm_id", "lane_id", "opcode"]).sum()
-    print(df_sum)
-    df_sum.to_csv("final_result_mxm.csv")
+    df["MASKED"] = df[["SDC", "DUE"]].apply(lambda r: int(r["SDC"] == 0 and r["DUE"] == 0), axis="columns")
+    df.to_csv("mxm_final_data.csv", index=False)
 
 
 if __name__ == '__main__':
