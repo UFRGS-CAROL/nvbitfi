@@ -99,7 +99,7 @@ def read_the_permanent_fault_error_file(input_file):
 def inject_permanent_faults(error_list, path_to_pf_lib, app_cmd):
     logging.info(f"Staring the fault injection for {error_list.shape[0]} faults")
     output_log = "nvbitfi-injection-log-temp.txt"
-    nvbit_injection_info = f"{path_to_pf_lib}/nvbitfi-injection-info.txt"
+    nvbit_injection_info = "nvbitfi-injection-info.txt"
     execute_fi = f"eval LD_PRELOAD={path_to_pf_lib}/pf_injector.so {app_cmd}"
     for fault_id, descriptor in enumerate(error_list):
         # Write the fault description
