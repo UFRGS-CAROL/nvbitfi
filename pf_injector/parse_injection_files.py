@@ -9,14 +9,14 @@ from commom import execute_cmd, OPCODES
 
 
 def untar_and_process_files():
-    tar_files = glob.glob("data/*.tar.gz")
+    tar_files = glob.glob("*.tar.gz")
     output_folder = "/tmp/pf_faults"
     execute_cmd(f"mkdir -p {output_folder}")
     final_list = list()
     for file in tar_files:
         untar_cmd = f"tar xzf {file} -C {output_folder}"
         execute_cmd(untar_cmd)
-        text_file = f"{output_folder}/{file.replace('.tar.gz', '.txt').replace('data/', '')}"
+        text_file = f"{output_folder}/{file.replace('.tar.gz', '.txt')}"
         nvbit_file = f"{output_folder}/nvbitfi-injection-info.txt"
         with open(text_file) as fault_output_file, open(nvbit_file) as nvbit_fp:
             sm_id, lane_id, mask, opcode = nvbit_fp.readlines()
