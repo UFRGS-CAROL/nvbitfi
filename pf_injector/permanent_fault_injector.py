@@ -109,10 +109,11 @@ def inject_permanent_faults(error_list, path_to_pf_lib, app_cmd):
         crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1", return_error_code=True)
         if crash_code:
             logging.exception(f"Crash code at fault injection {crash_code}")
-        output_new_name = output_log.replace(".txt", f"{fault_id}.txt")
-        execute_cmd(cmd=f"mv {output_log} {output_new_name}")
-        nvbit_injection_info_new_name = nvbit_injection_info.replace(".txt", f"{fault_id}.txt")
-        execute_cmd(cmd=f"mv {nvbit_injection_info} {nvbit_injection_info_new_name}")
+
+        compact_fault = f"tar czf fault_{fault_id}.tar.gz {fault_output_file} {output_log} {nvbit_injection_info}"
+        execute_cmd(cmd=compact_fault)
+        execute_cmd(cmd=f"rm  {fault_output_file} {output_log} {nvbit_injection_info}")
+
         if fault_id == 10:
             break
 
