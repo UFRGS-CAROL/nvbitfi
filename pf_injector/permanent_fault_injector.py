@@ -132,7 +132,7 @@ def main():
 
     # Inject the faults
     # TODO: FIx to load from a yaml file
-    PATH_TO_PF = "/home/fernando/git_research/nvbitfi/pf_injector"
+    PATH_TO_PF = "/home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/pf_injector"
     APP_CMD = "/home/fernando/NVIDIA_CUDA-11.3_Samples/0_Simple/matrixMul/matrixMul -wA=128 -wB=128 -hA=128 -hB=128"
     time_fault_injection = time.time()
     inject_permanent_faults(error_list=error_list, path_to_pf_lib=PATH_TO_PF, app_cmd=APP_CMD)
