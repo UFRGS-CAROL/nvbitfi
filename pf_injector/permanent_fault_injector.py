@@ -25,13 +25,16 @@ OPCODES = ['FADD', 'FADD32I', 'FCHK', 'FCMP', 'FFMA', 'FFMA32I', 'FMNMX', 'FMUL'
            'DEPBAR', 'GETCRSPTR', 'GETLMEMBASE', 'SETCRSPTR', 'SETLMEMBASE', 'PMTRIG', 'SETCTAID']
 
 
-def execute_cmd(cmd):
+def execute_cmd(cmd, return_error_code=False):
     logging.debug(f"Executing {cmd}")
     ret = os.system(cmd)
     caller = getframeinfo(stack()[1][0])
     if ret != 0:
         logging.error(f"ERROR AT: {caller.filename}:{caller.lineno} CMD: {cmd}")
         logging.error(f"Command was not correctly executed error code {ret}")
+        if return_error_code:
+            return ret
+
         raise ValueError()
 
 
@@ -103,7 +106,9 @@ def inject_permanent_faults(error_list, path_to_pf_lib, app_cmd):
         descriptor.write_to_file(nvbit_injection_info)
         # Execute the fault injection
         fault_output_file = f"fault_{fault_id}.txt"
-        execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1")
+        crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1", return_error_code=True)
+        if crash_code:
+            logging.exception(f"Crash code at fault injection {crash_code}")
         output_new_name = output_log.replace(".txt", f"{fault_id}.txt")
         execute_cmd(cmd=f"mv {output_log} {output_new_name}")
         nvbit_injection_info_new_name = nvbit_injection_info.replace(".txt", f"{fault_id}.txt")
