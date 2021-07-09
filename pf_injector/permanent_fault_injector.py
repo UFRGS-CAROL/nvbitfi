@@ -1,10 +1,12 @@
 #!/usr/bin/python3.8
 import argparse
 import datetime
+import os
 import re
 import numpy as np
 import time
 import logging
+from inspect import getframeinfo, stack
 
 OPCODES = ['FADD', 'FADD32I', 'FCHK', 'FCMP', 'FFMA', 'FFMA32I', 'FMNMX', 'FMUL', 'FMUL32I', 'FSEL', 'FSET',
            'FSETP', 'FSWZADD', 'IPA', 'MUFU', 'RRO', 'DADD', 'DFMA', 'DMNMX', 'DMUL', 'DSET', 'DSETP', 'HADD2',
@@ -21,6 +23,16 @@ OPCODES = ['FADD', 'FADD32I', 'FCHK', 'FCMP', 'FFMA', 'FFMA32I', 'FMNMX', 'FMUL'
            'PLONGJMP', 'KIL', 'BSSY', 'BSYNC', 'BREAK', 'BMOV', 'BPT', 'IDE', 'RAM', 'RTT', 'SAM', 'RPCMOV',
            'WARPSYNC', 'YIELD', 'NANOSLEEP', 'NOP', 'CS2R', 'S2R', 'LEPC', 'B2R', 'BAR', 'R2B', 'VOTE',
            'DEPBAR', 'GETCRSPTR', 'GETLMEMBASE', 'SETCRSPTR', 'SETLMEMBASE', 'PMTRIG', 'SETCTAID']
+
+
+def execute_cmd(cmd):
+    logging.debug(f"Executing {cmd}")
+    ret = os.system(cmd)
+    caller = getframeinfo(stack()[1][0])
+    if ret != 0:
+        logging.error(f"ERROR AT: {caller.filename}:{caller.lineno} CMD: {cmd}")
+        logging.error(f"Command was not correctly executed error code {ret}")
+        raise ValueError()
 
 
 class PermanentFaultDescriptor:
@@ -86,9 +98,18 @@ def inject_permanent_faults(error_list, path_to_pf_lib, app_cmd):
     output_log = "nvbitfi-injection-log-temp.txt"
     nvbit_injection_info = f"{path_to_pf_lib}/nvbitfi-injection-info.txt"
     execute_fi = f"eval LD_PRELOAD={path_to_pf_lib}/pf_injector.so {app_cmd}"
-    for descriptor in error_list:
+    for fault_id, descriptor in enumerate(error_list):
+        # Write the fault description
         descriptor.write_to_file(nvbit_injection_info)
-        break
+        # Execute the fault injection
+        fault_output_file = f"fault_{fault_id}.txt"
+        execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1")
+        output_new_name = output_log.replace(".txt", f"{fault_id}.txt")
+        execute_cmd(cmd=f"mv {output_log} {output_new_name}")
+        nvbit_injection_info_new_name = nvbit_injection_info.replace(".txt", f"{fault_id}.txt")
+        execute_cmd(cmd=f"mv {nvbit_injection_info} {nvbit_injection_info_new_name}")
+        if fault_id == 10:
+            break
 
 
 def main():
