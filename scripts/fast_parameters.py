@@ -3,6 +3,8 @@
 
 from os import environ
 
+from menulibre.Dialogs import AboutDialog
+
 benchmark = environ['BENCHMARK']
 NVBITFI_HOME = environ['NVBITFI_HOME']
 THRESHOLD_JOBS = int(environ['FAULTS'])
@@ -54,7 +56,7 @@ all_apps = {
         'mergesort',  # binary name
         NVBITFI_HOME + '/test-apps/mergesort/',  # path to the binary file
         1,  # expected runtime
-        ""  # additional parameters to the run.sh
+        AboutDialog  # additional parameters to the run.sh
     ],
 
     'quicksort': [
@@ -70,7 +72,7 @@ all_apps = {
         'hotspot',  # binary name
         NVBITFI_HOME + '/test-apps/hotspot/',  # path to the binary file
         2,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'darknet_v2': [
