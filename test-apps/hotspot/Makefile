@@ -28,7 +28,7 @@ LOGHELPER_INC=$(RAD_DIR)/src/include/
 LOGHELPER_LIB=$(RAD_DIR)/src/include/
 
 NVCCFLAGS= $(ARCH) -std=c++11 -Xptxas -v $(NVCCOPTFLAGS)
-INCLUDE= -I$(CUDAPATH)/include -I../common/include  -I$(LOGHELPER_INC)
+INCLUDE= -I$(CUDAPATH)/include -I$(RAD_DIR)/src/cuda/common/include  -I$(LOGHELPER_INC)
 LIBRARY= -L$(CUDAPATH)/lib64/
 CXXFLAGS= -I$(CUDAPATH)/include -L$(CUDAPATH)/lib64/ -lcudart  -std=c++11
 
