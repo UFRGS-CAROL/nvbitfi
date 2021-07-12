@@ -7,19 +7,18 @@ LOGS?=1
 USE_OMP=1
 
 BUILDPROFILER=0
+RAD_DIR=/home/carol/radiation-benchmarks
 
-UPPERCASED_PRECISION=$(shell echo $(PRECISION) | tr a-z A-Z)
 LOWERCASED_PRECISION=$(shell echo $(PRECISION) | tr A-Z a-z)
 
 ITERATIONS=10
 STREAMS=1
 SIZE?=1024
-SIM_TIME=1000
-DATA_DIR=../../../data/hotspot
+SIM_TIME=100
+DATA_DIR=$(RAD_DIR)/data/hotspot
 DEF_INPUT_POWER=$(DATA_DIR)/power_$(SIZE)
 DEF_INPUT_TEMP=$(DATA_DIR)/temp_$(SIZE)
 DEF_GOLD=$(DATA_DIR)/gold_$(LOWERCASED_PRECISION)_$(SIZE)_$(SIM_TIME)
-
 
 # Kepler, Volta
 SMS= 35 53 70 86
@@ -56,9 +55,6 @@ ifeq ($(BUILDPROFILER), 1)
 NVCCFLAGS+= -DBUILDPROFILER
 LIBRARY+= -L../common/lib -lNVMLWrapper -L$(CUDAPATH)/lib64/stubs -lnvidia-ml 
 endif
-
-
-NVCCFLAGS+= -DPRECISION_$(UPPERCASED_PRECISION)
 
 # It is necessary to multi compiler analysis
 PASSHOSTCC= -DNVCCOPTFLAGS="$(strip $(NVCCOPTFLAGS))"

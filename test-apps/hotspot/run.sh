@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SIZE=1024
-SIM_TIME=1
+SIM_TIME=100
 STREAMS=1
 PRECISION=float
 CUDAPATH=/usr/local/cuda
