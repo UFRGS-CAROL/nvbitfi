@@ -98,7 +98,7 @@ struct parameters {
 			char *tmp;
 			getCmdLineArgumentString(argc, (const char **) argv, "precision", &(tmp));
 			this->tested_type = std::string(tmp);
-			//printf("Precision: %s\n", this->tested_type.c_str());
+			printf("Precision: %s\n", this->tested_type.c_str());
 		} else {
 			this->tested_type = "float";
 			printf("Using default precision float\n");
@@ -128,7 +128,7 @@ struct parameters {
 			char *tmp;
 			getCmdLineArgumentString(argc, (const char **) argv, "gold_temp", &(tmp));
 			this->ofile = std::string(tmp);
-			//printf("Gold/output file: %s\n", this->ofile.c_str());
+			printf("Gold/output file: %s\n", this->ofile.c_str());
 		} else {
 			this->ofile = "gold_temp_" + this->tested_type + "_" + std::to_string(this->grid_rows)
 					+ "_" + std::to_string(this->sim_time);
