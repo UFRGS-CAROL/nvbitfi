@@ -56,7 +56,7 @@ all_apps = {
         'mergesort',  # binary name
         NVBITFI_HOME + '/test-apps/mergesort/',  # path to the binary file
         1,  # expected runtime
-        AboutDialog  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'quicksort': [
