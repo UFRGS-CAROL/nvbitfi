@@ -2,7 +2,7 @@ CUDAPATH=/usr/local/cuda
 CC=gcc
 CXX=g++
 NVCC=$(CUDAPATH)/bin/nvcc
-PRECISION?=single
+PRECISION?=float
 LOGS?=1
 USE_OMP=1
 
