@@ -3,8 +3,6 @@
 
 from os import environ
 
-from menulibre.Dialogs import AboutDialog
-
 benchmark = environ['BENCHMARK']
 NVBITFI_HOME = environ['NVBITFI_HOME']
 THRESHOLD_JOBS = int(environ['FAULTS'])
