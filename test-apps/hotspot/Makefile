@@ -80,3 +80,15 @@ test: $(TARGET)
 				-sim_time=$(SIM_TIME) -verbose -iterations=$(ITERATIONS) \
 				 -streams=$(STREAMS) -precision=$(PRECISION)
 				
+
+
+golden:
+	./$(TARGET) -size=$(SIZE) -input_power=$(DEF_INPUT_POWER) \
+					-input_temp=$(DEF_INPUT_TEMP) -gold_temp=$(DEF_GOLD) \
+					-sim_time=$(SIM_TIME) -verbose -iterations=$(ITERATIONS) \
+					 -streams=$(STREAMS) -precision=$(PRECISION) > golden_stdout.txt 2>golden_stderr.txt
+	sed -i '/LOGFILENAME/c\' golden_stdout.txt
+	sed -i '/Time/c\' golden_stdout.txt
+	sed -i '/time/c\' golden_stdout.txt
+	sed -i '/^$$/d' golden_stdout.txt
+	sed -i '/Performance/c\' golden_stdout.txt
