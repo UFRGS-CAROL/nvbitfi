@@ -66,7 +66,7 @@ $(TARGET): $(RUN_SOURCES)
 	$(NVCC) -ccbin $(CXX) $(INCLUDE) $(LIBRARY) $(NVCCFLAGS) $(RUN_SOURCES) -o $(TARGET)
 
 clean:
-	rm -rf $(TARGET) $(DEF_GOLD)
+	rm -rf $(TARGET)
 
 generate: $(TARGET)
 	./$(TARGET) -generate -size=$(SIZE) -input_power=$(DEF_INPUT_POWER) \
