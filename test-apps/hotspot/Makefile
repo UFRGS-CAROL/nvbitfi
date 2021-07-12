@@ -1,54 +1,86 @@
-CXX=g++-7
-CUDA_BASE_DIR=/usr/local/cuda
-NVCC=$(CUDA_BASE_DIR)/bin/nvcc
+CUDAPATH=/usr/local/cuda
+CC=gcc
+CXX=g++
+NVCC=$(CUDAPATH)/bin/nvcc
+PRECISION?=single
+LOGS?=1
+USE_OMP=1
+
+BUILDPROFILER=0
+
+UPPERCASED_PRECISION=$(shell echo $(PRECISION) | tr a-z A-Z)
+LOWERCASED_PRECISION=$(shell echo $(PRECISION) | tr A-Z a-z)
+
+ITERATIONS=10
+STREAMS=1
+SIZE?=1024
+SIM_TIME=1000
+DATA_DIR=../../../data/hotspot
+DEF_INPUT_POWER=$(DATA_DIR)/power_$(SIZE)
+DEF_INPUT_TEMP=$(DATA_DIR)/temp_$(SIZE)
+DEF_GOLD=$(DATA_DIR)/gold_$(LOWERCASED_PRECISION)_$(SIZE)_$(SIM_TIME)
 
 
-PRECISION=-DPRECISION_SINGLE
-TARGET = hotspot
-RAD=/home/carol/radiation-benchmarks
+# Kepler, Volta
+SMS= 35 53 70 86
+$(foreach sm,$(SMS),$(eval ARCH += -gencode arch=compute_$(sm),code=sm_$(sm)))
 
-LOGHELPER_INC=$(RAD)/src/include 
-LOGHELPER_LIB=$(RAD)/src/include 
+LOGHELPER_INC=../../include/
+LOGHELPER_LIB=../../include/
 
-GENCODE=-gencode arch=compute_35,code=[sm_35,compute_35]
-GENCODE+= -gencode arch=compute_70,code=[sm_70,compute_70] #Titan V
+NVCCFLAGS= $(ARCH) -std=c++11 -Xptxas -v $(NVCCOPTFLAGS)
+INCLUDE= -I$(CUDAPATH)/include -I../common/include  -I$(LOGHELPER_INC)
+LIBRARY= -L$(CUDAPATH)/lib64/
+CXXFLAGS= -I$(CUDAPATH)/include -L$(CUDAPATH)/lib64/ -lcudart  -std=c++11
 
-LOG_FLAGS=-DLOGS -I$(RAD)/src/cuda/common  -I$(LOGHELPER_INC) -L$(LOGHELPER_LIB) -lLogHelper
+TARGET=cuda_hotspot
+RUN_SOURCES=./cuda_hotspot.cu
 
-NVCC_FLAGS = $(PRECISION) $(LOG_FLAGS) -ccbin $(CXX) -Xptxas -v -I$(CUDA_BASE_DIR)/include/ -Xcompiler " -fopenmp"
-LINK_FLAGS = -std=c++11 $(GENCODE) -lcudart -lcudadevrt $(EXTRA_LINK_FLAGS)
 
-NVCC_FLAGS+= -Xptxas -v $(NVCCOPTFLAGS) $(OPT)
-# TODO: verify this code
-NVCC_FLAGS+= -DNVCCOPTFLAGS="$(strip $(patsubst %-Xptxas,%,$(NVCCOPTFLAGS)))"  
-# Host must be always at maximum opt
-NVCC_FLAGS+= --optimize 3
+ifeq ($(LOGS), 1)
+#INCLUDE+= -I$(LOGHELPER_INC)
+NVCCFLAGS+= -DLOGS -lLogHelper 
+LIBRARY+= -L$(LOGHELPER_LIB) 
+CXXFLAGS+= -I$(LOGHELPER_INC) -L$(LOGHELPER_LIB) -DLOGS -lLogHelper 
+endif
 
-CUDA_LIB_DIR=$(CUDA_BASE_DIR)/lib64
+ifeq ($(USE_OMP), 1)
+NVCCFLAGS+= -DUSE_OMP -Xcompiler " -fopenmp -O3"
+endif
 
-INPUTTEMP=$(RAD)/data/hotspot/temp_1024
-INPUTPOWER=$(RAD)/data/hotspot/power_1024
-GOLD=$(RAD)/data/hotspot/gold_1024_1
+ifeq ($(DEBUG), 1)
+NVCCFLAGS+= -g -G
+endif
+
+ifeq ($(BUILDPROFILER), 1)
+NVCCFLAGS+= -DBUILDPROFILER
+LIBRARY+= -L../common/lib -lNVMLWrapper -L$(CUDAPATH)/lib64/stubs -lnvidia-ml 
+endif
+
+
+NVCCFLAGS+= -DPRECISION_$(UPPERCASED_PRECISION)
+
+# It is necessary to multi compiler analysis
+PASSHOSTCC= -DNVCCOPTFLAGS="$(strip $(NVCCOPTFLAGS))"
+NVCCFLAGS+= -Xptxas -v $(NVCCOPTFLAGS) --optimize 3 $(PASSHOSTCC)
 
 all: $(TARGET)
 
-$(TARGET):
-	$(NVCC) -o hotspot cuda_hotspot.cu $(CFLAGS) $(NVCC_FLAGS) -L$(CUDA_LIB_DIR) $(LINK_FLAGS)
-	
-golden:
-	./$(TARGET) -verbose -size=1024 -sim_time=10 -streams=1 -input_temp=$(INPUTTEMP) -input_power=$(INPUTPOWER) -gold_temp=$(GOLD) -iterations=1 > golden_stdout.txt 2>golden_stderr.txt
-	sed -i '/LOGFILENAME/c\' golden_stdout.txt 
-	sed -i '/Time/c\' golden_stdout.txt 
-	sed -i '/time/c\' golden_stdout.txt 
-	sed -i '/^$$/d' golden_stdout.txt
-	sed -i '/Performance/c\' golden_stdout.txt
-
-test:
-	./$(TARGET) -size=1024 -sim_time=10 -streams=1 -input_temp=$(INPUTTEMP) -input_power=$(INPUTPOWER) -gold_temp=$(GOLD) -iterations=1
-
-generate:
-	./$(TARGET) -size=1024 -sim_time=10 -streams=1 -input_temp=$(INPUTTEMP) -input_power=$(INPUTPOWER) -gold_temp=$(GOLD) -iterations=1 -generate
+$(TARGET): $(RUN_SOURCES)
+	$(NVCC) -ccbin $(CXX) $(INCLUDE) $(LIBRARY) $(NVCCFLAGS) $(RUN_SOURCES) -o $(TARGET)
 
 clean:
-	rm -f *.o *~ hotspot
+	rm -rf $(TARGET) $(DEF_GOLD)
 
+generate: $(TARGET)
+	./$(TARGET) -generate -size=$(SIZE) -input_power=$(DEF_INPUT_POWER) \
+				-input_temp=$(DEF_INPUT_TEMP) -gold_temp=$(DEF_GOLD) \
+				-sim_time=$(SIM_TIME) -verbose -iterations=$(ITERATIONS) \
+				 -streams=$(STREAMS) -precision=$(PRECISION)
+
+test: $(TARGET)
+	./$(TARGET) -size=$(SIZE) -input_power=$(DEF_INPUT_POWER) \
+				-input_temp=$(DEF_INPUT_TEMP) -gold_temp=$(DEF_GOLD) \
+				-sim_time=$(SIM_TIME) -verbose -iterations=$(ITERATIONS) \
+				 -streams=$(STREAMS) -precision=$(PRECISION)
+				
