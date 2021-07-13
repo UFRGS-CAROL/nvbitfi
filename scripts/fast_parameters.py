@@ -46,7 +46,7 @@ all_apps = {
         'cudaACCL',  # binary name
         NVBITFI_HOME + '/test-apps/accl/',  # path to the binary file
         1,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'mergesort': [
@@ -62,7 +62,7 @@ all_apps = {
         'quicksort',  # binary name
         NVBITFI_HOME + '/test-apps/quicksort/',  # path to the binary file
         5,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'hotspot': [
