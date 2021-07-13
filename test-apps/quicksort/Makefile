@@ -4,6 +4,7 @@ LOGS=1
 BUILDPROFILER=0
 DEBUG=0
 #SIZE=134217728
+ITERATIONS=1
 SIZE=1048576
 
 VPATH=./
@@ -72,21 +73,21 @@ clean:
 	
 generate:
 	 ./$(EXEC) -size=$(SIZE) -generate -verbose \
-	 		   -input=$(INPUT)  -gold=$(GOLD) -iterations=1
+	 		   -input=$(INPUT)  -gold=$(GOLD) -iterations=$(ITERATIONS)
 	 		   #-noinputensurance
 	 		   	
 test:
 	 ./$(EXEC) -size=$(SIZE) -verbose \
-	 		   -input=$(INPUT)  -gold=$(GOLD) -iterations=1
+	 		   -input=$(INPUT)  -gold=$(GOLD) -iterations=$(ITERATIONS)
 	 		   #-noinputensurance
 
 golden:
-        ./quicksort -size=$(SIZE) -input=$(INPUT) -gold=$(GOLD) -iterations=1 -verbose > golden_stdout.txt 2>golden_stderr.txt
-        sed -i '/LOGFILENAME/c\' golden_stdout.txt 
-        sed -i '/Time/c\' golden_stdout.txt 
-        sed -i '/time/c\' golden_stdout.txt 
-        sed -i '/^$$/d' golden_stdout.txt
-        sed -i '/Perf/c\' golden_stdout.txt
-        sed -i '/Starting/c\' golden_stdout.txt
-        sed -i '/Done in/c\' golden_stdout.txt
+	./$(EXEC) -size=$(SIZE) -input=$(INPUT) -gold=$(GOLD) -iterations=$(ITERATIONS) -verbose > golden_stdout.txt 2>golden_stderr.txt
+	sed -i '/LOGFILENAME/c\' golden_stdout.txt
+	sed -i '/Time/c\' golden_stdout.txt
+	sed -i '/time/c\' golden_stdout.txt
+	sed -i '/^$$/d' golden_stdout.txt
+	sed -i '/Perf/c\' golden_stdout.txt
+	sed -i '/Starting/c\' golden_stdout.txt
+	sed -i '/Done in/c\' golden_stdout.txt
 
