@@ -1,46 +1,82 @@
-TARGET = quicksort
-RAD=/home/carol/radiation-benchmarks
-LOG_FLAGS= -I$(RAD)/src/cuda/common
-
+CXX=g++
+EXEC=quicksort
+LOGS=1
+BUILDPROFILER=0
+DEBUG=0
 #SIZE=134217728
-SIZE=1048576 
-INPUT=$(RAD)/data/quicksort/quicksort_input_134217728
-GOLD=$(RAD)/data/quicksort/quicksort_gold_$(SIZE)
+SIZE=1048576
 
-CUDA_BASE_DIR=/usr/local/cuda
-NVCC=$(CUDA_BASE_DIR)/bin/nvcc
+VPATH=./
+CUDAPATH=/usr/local/cuda
+NVCC=$(CUDAPATH)/bin/nvcc
 
-GENCODE=-gencode arch=compute_35,code=[sm_35,compute_35]
-GENCODE+= -gencode arch=compute_70,code=[sm_70,compute_70] #Titan V
+NVCCFLAGS= -std=c++14 -O3 -Xptxas -v -rdc=true -Xcompiler -fopenmp
+CXXFLAGS= -std=c++14 -O3  -Xcompiler -fPIC  -Xcompiler  -pthread -Xcompiler -fopenmp
 
-LOGHELPER_LIB= -DLOGS -I$(RAD)/src/include -L$(RAD)/src/include -I$(RAD)/src/cuda/common
+INCLUDE= -I$(CUDAPATH)/include -I$(CUDAPATH)/samples/common/inc -I../../include -I../common
+# Kepler, Volta
+SMS= 35 70 86
+$(foreach sm,$(SMS),$(eval ARCH += -gencode arch=compute_$(sm),code=sm_$(sm)))
 
-CXX=g++-7
-NVCC_FLAGS = -ccbin $(CXX) $(LOGHELPER_LIB) -lLogHelper -Xptxas -v -I$(CUDA_BASE_DIR)/include/ -Xcompiler " -fopenmp" -rdc=true
-LINK_FLAGS = -L$(CUDA_BASE_DIR)/lib64 -std=c++11 $(GENCODE) -lcudart -lcudadevrt 
+OBJDIR=./obj/
+OBJ= cdpBitonicSort.o cdpAdvancedQuicksort.o
 
-all: $(TARGET)
+ifeq ($(DEBUG), 1) 
+CXXFLAGS+=-O0 -g
+NVCCFLAGS+= -g -G
+endif
 
-$(TARGET):
-	$(NVCC) -o $(TARGET) cdpAdvancedQuicksort.cu cdpBitonicSort.cu  $(NVCC_FLAGS) $(LINK_FLAGS)
+ifeq ($(LOGS), 1)
+CXXFLAGS+= -DLOGS
+NVCCFLAGS+= -DLOGS
+LDFLAGS+= -L../../include  -lLogHelper
+endif
+
+ifeq ($(BUILDPROFILER), 1)
+CXXFLAGS+= -DBUILDPROFILER
+NVCCFLAGS+= -DBUILDPROFILER
+LDFLAGS+= -L../common/lib -lNVMLWrapper -L$(CUDAPATH)/lib64/stubs -lnvidia-ml 
+endif
 
 
-golden:
-	./quicksort -size=$(SIZE) -input=$(INPUT) -gold=$(GOLD) -iterations=1 -verbose > golden_stdout.txt 2>golden_stderr.txt
-	sed -i '/LOGFILENAME/c\' golden_stdout.txt 
-	sed -i '/Time/c\' golden_stdout.txt 
-	sed -i '/time/c\' golden_stdout.txt 
-	sed -i '/^$$/d' golden_stdout.txt
-	sed -i '/Perf/c\' golden_stdout.txt
-	sed -i '/Starting/c\' golden_stdout.txt
-	sed -i '/Done in/c\' golden_stdout.txt
+LDFLAGS+= -L$(CUDAPATH)/lib64  -lcudart  -lcurand
 
-test:
-	./quicksort -size=$(SIZE) -input=$(INPUT) -gold=$(GOLD) -iterations=1
+OBJS = $(addprefix $(OBJDIR), $(OBJ))
+DEPS = $(wildcard src/*.h) Makefile
 
-generate:
-	./quicksort -size=$(SIZE) -input=$(INPUT) -gold=$(GOLD) -generate -iterations=1
+# It is necessary to multi compiler analysis
+PASSHOSTCC= -DNVCCOPTFLAGS="$(strip $(NVCCOPTFLAGS))"
+NVCCFLAGS+= -Xptxas -v $(NVCCOPTFLAGS) --optimize 3 $(PASSHOSTCC)
+
+all: mkdir $(EXEC)
+
+
+$(EXEC): $(OBJS)  
+	$(NVCC) $(ARCH) $^ -o $@ $(LDFLAGS) $(INCLUDE) $(CXXFLAGS)
+
+$(OBJDIR)%.o: %.cpp $(DEPS)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(INCLUDE)
+	
+$(OBJDIR)%.o: %.cu $(DEPS)
+	$(NVCC) $(ARCH) $(NVCCFLAGS) -c $< -o $@ $(INCLUDE) 
+
+mkdir:
+	mkdir -p $(OBJDIR)
 
 clean:
-	rm -f *.o *~ $(TARGET)
-
+	rm -f $(OBJDIR)* $(EXEC)
+	
+	
+generate:
+	 ./$(EXEC) -size=$(SIZE) -generate -verbose \
+	 		   -input=./input_$(SIZE) \
+	 		   -gold=./gold_$(SIZE) \
+	 		   -iterations=1 
+	 		   #-noinputensurance
+	 		   	
+test:
+	 ./$(EXEC) -size=$(SIZE) -verbose \
+	 		   -input=./input_$(SIZE) \
+	 		   -gold=./gold_$(SIZE) \
+	 		   -iterations=1
+	 		   #-noinputensurance
