@@ -33,15 +33,14 @@ endif
 ifeq ($(LOGS), 1)
 CXXFLAGS+= -DLOGS
 NVCCFLAGS+= -DLOGS
-LDFLAGS+= -L../../include  -lLogHelper
+LDFLAGS+= -L$(RADDIR)/src/include  -lLogHelper
 endif
 
 ifeq ($(BUILDPROFILER), 1)
 CXXFLAGS+= -DBUILDPROFILER
 NVCCFLAGS+= -DBUILDPROFILER
-LDFLAGS+= -L../common/lib -lNVMLWrapper -L$(CUDAPATH)/lib64/stubs -lnvidia-ml 
+LDFLAGS+= -L$(RADDIR)/src/cuda/common/lib -lNVMLWrapper -L$(CUDAPATH)/lib64/stubs -lnvidia-ml
 endif
-
 
 LDFLAGS+= -L$(CUDAPATH)/lib64  -lcudart  -lcurand
 
