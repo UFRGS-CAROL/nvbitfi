@@ -8,21 +8,24 @@ import logging
 
 from commom import execute_cmd, OPCODES
 
+PATH_TO_PF = "/home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/pf_injector"
+APP_CMD = "/home/fernando/NVIDIA_CUDA-11.3_Samples/0_Simple/matrixMul/matrixMul -wA=128 -wB=128 -hA=128 -hB=128"
+
 
 class PermanentFaultDescriptor:
-    def __init__(self, gold_value, fault_value, cta, warp_id, sm_id, instruction):
+    def __init__(self, gold_value, fault_value, cta, warp_id, lane_id, sm_id, instruction):
         self.gold_value = int(gold_value, 16)
         try:
             self.fault_value = int(fault_value, 16)
         except ValueError:
             # When the mask be calculated it will return at FFFFFF
+            # It is for the XXXXXXXX... case
             self.fault_value = int("0xFFFFFFFF", 16) ^ self.gold_value
         self.cta = cta
         self.warp_id = warp_id
         self.sm_id = sm_id
         self.opcode = OPCODES.index(instruction.strip())
-        # TODO: FOR THE MXM CASE THE LANE ID IS ALWAYS 0
-        self.lane_id = "0"
+        self.lane_id = lane_id
 
     @property
     def mask(self):
@@ -36,8 +39,7 @@ class PermanentFaultDescriptor:
         opcode ID: 0-171 (see enum InstructionType in common/arch.h for the mapping). 171: all opcodes.
         """
         with open(output, "w") as ofp:
-            for line in [self.sm_id, self.lane_id, self.mask, self.opcode]:
-                ofp.write(f"{line}\n")
+            ofp.writelines(lines=[f"{self.sm_id}\n", f"{self.lane_id}\n", f"{self.mask}\n", f"{self.opcode}\n"])
 
 
 def read_the_permanent_fault_error_file(input_file):
@@ -60,7 +62,7 @@ def read_the_permanent_fault_error_file(input_file):
             m = re.match(pattern=pattern, string=line)
             if m:
                 descriptor = PermanentFaultDescriptor(gold_value=m.group(1), fault_value=m.group(2),
-                                                      cta=m.group(8, 9, 10), warp_id=m.group(14),
+                                                      cta=m.group(8, 9, 10), warp_id=m.group(14), lane_id=m.group(7),
                                                       sm_id=m.group(16), instruction=m.group(17).strip())
                 values_list.append(descriptor)
 
@@ -105,9 +107,6 @@ def main():
     logging.debug(f"Time spent on reading the error file {datetime.timedelta(seconds=time_reading_error_file)}")
 
     # Inject the faults
-    # TODO: FIx to load from a yaml file
-    PATH_TO_PF = "/home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/pf_injector"
-    APP_CMD = "/home/fernando/NVIDIA_CUDA-11.3_Samples/0_Simple/matrixMul/matrixMul -wA=128 -wB=128 -hA=128 -hB=128"
     time_fault_injection = time.time()
     inject_permanent_faults(error_list=error_list, path_to_pf_lib=PATH_TO_PF, app_cmd=APP_CMD)
     time_fault_injection = time.time() - time_fault_injection
