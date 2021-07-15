@@ -39,7 +39,7 @@ class PermanentFaultDescriptor:
         opcode ID: 0-171 (see enum InstructionType in common/arch.h for the mapping). 171: all opcodes.
         """
         with open(output, "w") as ofp:
-            ofp.writelines(lines=[f"{self.sm_id}\n", f"{self.lane_id}\n", f"{self.mask}\n", f"{self.opcode}\n"])
+            ofp.writelines([f"{self.sm_id}\n", f"{self.lane_id}\n", f"{self.mask}\n", f"{self.opcode}\n"])
 
 
 def read_the_permanent_fault_error_file(input_file):
