@@ -45,12 +45,15 @@ class PermanentFaultDescriptor:
 def read_the_permanent_fault_error_file(input_file):
     """
     The format of a line in the file is like bellow, the new line is only for readability
-    [golden output] [faulty output] [location of the fault] [input 1] [input2] [input3] [Thread] [CTA] [NCTA] [WARPID]
-    [GWARPID] [SMID] [nemonic of the instruction]
+    1               2               3                       4         5         6        7        8,9,10
+    [golden output] [faulty output] [location of the fault] [input 1] [input2] [input3] [Thread] [CTA]
+    11,12,13    14        15        16    17
+    [NCTA]      [WARPID] [GWARPID] [SMID] [nemonic of the instruction]
     example:
-    1                   2                           3           4           5           6      7 8,9,10 11,12,13 14 15  16
-    0x3f8147ae XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX sa0_write.txt 0x3c23d70a 0x3f800000 0x3c23d70a 0 0,1,0  4,4,1    18 146 8
-    FFMA R12, R28, R13, R12 ;
+    1                   2                           3           4           5           6      7 8,9,10
+    0x3f8147ae XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX sa0_write.txt 0x3c23d70a 0x3f800000 0x3c23d70a 0 0,1,0
+    11,12,13 14 15  16 17
+    4,4,1    18 146 8  FFMA R12, R28, R13, R12 ;
     Regarding the location of the fault: sa0 = Stuck-at 0, sa1 = Stuck-at 1
     """
     pattern = r"(0[xX][0-9a-fA-F]+) (0[xX][0-9a-fA-F]+|[xX]+) (\S+) (0[xX][0-9a-fA-F]+)  (0[xX][0-9a-fA-F]+)  "
