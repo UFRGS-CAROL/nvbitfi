@@ -13,6 +13,9 @@ DMR=none
 BUILDRELATIVEERROR=0
 CHECKBLOCK=1
 
+RADDIR=/home/carol/radiation-benchmarks
+DATADIR=$(RADDIR)/data/gemm
+
 OUTPUTPREFIX=$(PRECISION)_$(ALPHA)_$(BETA)_$(SIZE)_cublas_$(CUBLAS)_tensor_$(TENSOR_CORES).matrix
 
 # NVCC optmizations flags
@@ -21,8 +24,7 @@ NVCCOPTFLAGS=
 # This is what I use, uncomment if you know your arch and want to specify
 # Kepler, Volta
 SMS= 35 53 70 86
-$(foreach sm,$(SMS), $(eval ARCH += -gencode arch=compute_$(sm),code=sm_$(sm)))ARCH=-gencode arch=compute_35,code=[sm_35,compute_35]
-
+$(foreach sm,$(SMS), $(eval ARCH += -gencode arch=compute_$(sm),code=sm_$(sm)))
 
 VPATH=./src/
 TARGET=gemm
@@ -30,15 +32,11 @@ OBJDIR=./obj/
 CXX=g++
 CUDAPATH=/usr/local/cuda
 NVCC=$(CUDAPATH)/bin/nvcc 
-OPTS=-O3
 LDFLAGS=  -L$(CUDAPATH)/lib64 -lcudart -lcurand -lcublas
 COMMON= --std=c++11
-CFLAGS= -Wall -Wfatal-errors
+CFLAGS= -O3 -Wall -Wfatal-errors
 
-RAD_DIR=/home/fernando/radiation-benchmarks
-
-INCLUDE=-I$(CUDAPATH)/include -I$(RAD_DIR)/src/cuda/common
-
+INCLUDE=-I$(CUDAPATH)/include -I$(RADDIR)/src/cuda/common  -I$(CUDAPATH)/include/
 
 ifeq ($(CUBLAS), 1)
 USECUBLAS= --use_cublas
@@ -49,7 +47,7 @@ USETENSORS= --tensor_cores
 endif
 
 ifeq ($(DEBUG), 1) 
-OPTS=-O0 -g -DDEBUG
+CFLAGS+=-O0 -g -DDEBUG
 NVCCFLAGS+= -g -G -DDEBUG
 endif
 
@@ -63,15 +61,13 @@ NVCCFLAGS+= -Xcompiler "-DOMP -fopenmp"
 endif
 
 ifeq ($(LOGS), 1)
-INCLUDE+=-I$(RAD_DIR)/src/include/
+INCLUDE+=-I$(RADDIR)/src/include/
 NVCCFLAGS+= -DLOGS
 CFLAGS+= -DLOGS
-LDFLAGS+= -L$(RAD_DIR)/src/include/ -lLogHelper -DLOGS=1
+LDFLAGS+= -L$(RADDIR)/src/include/ -lLogHelper -DLOGS=1
 endif
 
-
 OBJ= main.o setup_gemm.o Parameters.o common.o setup_tensor_cores.o
-CFLAGS+=$(OPTS)
 
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
 DEPS = $(wildcard src/*.h) Makefile
@@ -80,7 +76,7 @@ DEPS = $(wildcard src/*.h) Makefile
 PASSHOSTCC= -DNVCCOPTFLAGS="$(strip $(NVCCOPTFLAGS))"
 NVCCFLAGS+= -Xptxas -v $(NVCCOPTFLAGS) --optimize 3 $(PASSHOSTCC)
 
-all: obj $(TARGET)
+all: mkdir $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) $(COMMON) $(CFLAGS) $^ $(INCLUDE) -o $@  $(LDFLAGS)  
@@ -91,10 +87,9 @@ $(OBJDIR)%.o: %.cpp $(DEPS)
 $(OBJDIR)%.o: %.cu $(DEPS)
 	$(NVCC) -ccbin $(CXX) $(ARCH) $(COMMON) $(NVCCFLAGS) $(INCLUDE) -c $< -o $@ 
 
-
-obj:
+mkdir:
 	mkdir -p obj
-
+	mkdir -p $(DATADIR)
 
 .PHONY: clean
 clean:
@@ -104,21 +99,22 @@ clean:
 generate:
 	./$(TARGET) --size $(SIZE) --generate --verbose \
 			--precision $(PRECISION) --dmr none \
+			--iterations 1  \
 			--alpha $(ALPHA) --beta $(BETA) \
-			--input_a $(RAD_DIR)/data/gemm/a_$(OUTPUTPREFIX) \
-			--input_b $(RAD_DIR)/data/gemm/b_$(OUTPUTPREFIX) \
-			--input_c $(RAD_DIR)/data/gemm/c_$(OUTPUTPREFIX) \
-			--gold  $(RAD_DIR)/data/gemm/g_$(OUTPUTPREFIX) $(USECUBLAS) $(USETENSORS)
+			--input_a $(DATADIR)/a_$(OUTPUTPREFIX) \
+			--input_b $(DATADIR)/b_$(OUTPUTPREFIX) \
+			--input_c $(DATADIR)/c_$(OUTPUTPREFIX) \
+			--gold  $(DATADIR)/g_$(OUTPUTPREFIX) $(USECUBLAS) $(USETENSORS)
 	
 test:
 	./$(TARGET) --size $(SIZE) --verbose \
 			--precision $(PRECISION) --dmr $(DMR) \
 			--iterations $(ITERATIONS)  \
 			--alpha $(ALPHA) --beta $(BETA) \
-			--input_a $(RAD_DIR)/data/gemm/a_$(OUTPUTPREFIX) \
-			--input_b $(RAD_DIR)/data/gemm/b_$(OUTPUTPREFIX) \
-			--input_c $(RAD_DIR)/data/gemm/c_$(OUTPUTPREFIX) \
-			--gold  $(RAD_DIR)/data/gemm/g_$(OUTPUTPREFIX)	\
+			--input_a $(DATADIR)/a_$(OUTPUTPREFIX) \
+			--input_b $(DATADIR)/b_$(OUTPUTPREFIX) \
+			--input_c $(DATADIR)/c_$(OUTPUTPREFIX) \
+			--gold  $(DATADIR)/g_$(OUTPUTPREFIX)	\
 			--opnum $(CHECKBLOCK) $(USECUBLAS) $(USETENSORS)
 			
 
@@ -127,10 +123,10 @@ golden:
 			--precision $(PRECISION) --dmr $(DMR) \
 			--iterations $(ITERATIONS)  \
 			--alpha $(ALPHA) --beta $(BETA) \
-			--input_a $(RAD_DIR)/data/gemm/a_$(OUTPUTPREFIX) \
-			--input_b $(RAD_DIR)/data/gemm/b_$(OUTPUTPREFIX) \
-			--input_c $(RAD_DIR)/data/gemm/c_$(OUTPUTPREFIX) \
-			--gold    $(RAD_DIR)/data/gemm/g_$(OUTPUTPREFIX) $(USECUBLAS) $(USETENSORS)  > golden_stdout.txt 2>golden_stderr.txt
+			--input_a $(DATADIR)/gemm/a_$(OUTPUTPREFIX) \
+			--input_b $(DATADIR)/gemm/b_$(OUTPUTPREFIX) \
+			--input_c $(DATADIR)/gemm/c_$(OUTPUTPREFIX) \
+			--gold    $(DATADIR)/gemm/g_$(OUTPUTPREFIX) $(USECUBLAS) $(USETENSORS)  > golden_stdout.txt 2>golden_stderr.txt
 	sed -i '/LOGFILENAME/c\' golden_stdout.txt 
 	sed -i '/Time/c\' golden_stdout.txt 
 	sed -i '/time/c\' golden_stdout.txt 

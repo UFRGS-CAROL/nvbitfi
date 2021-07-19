@@ -10,9 +10,10 @@ BUILDPROFILER=0
 ITERATIONS=1
 SIZE=7
 FRAMES=7
-RAD=/home/carol/radiation-benchmarks
-GOLD=$(RAD)/data/accl/gold_$(SIZE)_$(FRAMES).data
-INPUT=$(RAD)/data/accl/7Frames.pgm
+RADDIR=/home/carol/radiation-benchmarks
+DATADIR=$(RADDIR)/data/accl
+GOLD=$(DATADIR)/gold_$(SIZE)_$(FRAMES).data
+INPUT=$(DATADIR)/7Frames.pgm
 
 VPATH=./src/
 
@@ -23,7 +24,7 @@ NVCCFLAGS= -std=c++11 -rdc=true
 SMS= 35 70 86
 $(foreach sm,$(SMS),$(eval ARCH += -gencode arch=compute_$(sm),code=sm_$(sm)))
 
-INCLUDE= -I./src -I$(CUDAPATH)/include -I$(CUDAPATH)/samples/common/inc  -I$(RAD)/src/cuda/common/include
+INCLUDE= -I./src -I$(CUDAPATH)/include -I$(CUDAPATH)/samples/common/inc -I$(RADDIR)/src/include -I$(RADDIR)/src/cuda/common/include
 
 OBJDIR=./obj/
 GPUOBJ= accl.o_dlink.o
@@ -36,11 +37,15 @@ NVCCFLAGS+= -g -G
 endif
 
 ifeq ($(LOGS), 1)
-CXXFLAGS+= -DLOGS -I$(RAD)/src/include
-NVCCFLAGS+= -DLOGS -I$(RAD)/src/include
-LDFLAGS+= -L$(RAD)/src/include  -lLogHelper
+CXXFLAGS+= -DLOGS -I$(RADDIR)/src/include
+NVCCFLAGS+= -DLOGS -I$(RADDIR)/src/include
+LDFLAGS+= -L$(RADDIR)/src/include  -lLogHelper
 endif
 
+ifeq ($(BUILDPROFILER), 1)
+CXXFLAGS+= -DBUILDPROFILER
+LDFLAGS+= -L$(RADDIR)/src/cuda/common/lib -lNVMLWrapper -L$(CUDAPATH)/lib64/stubs -lnvidia-ml 
+endif
 
 # It is necessary to multi compiler analysis
 PASSHOSTCC= -DNVCCOPTFLAGS="$(strip $(NVCCOPTFLAGS))"
@@ -66,13 +71,14 @@ $(OBJDIR)%.o: %.cu $(DEPS)
 
 mkdir:
 	mkdir -p $(OBJDIR)
+	mkdir -p $(DATADIR)
 
 clean:
 	rm -f $(OBJDIR)* $(EXEC)
 	
 
 generate:
-	./$(EXEC) --size $(SIZE) --frames $(FRAMES) --input $(INPUT) --gold $(GOLD) --iterations $(ITERATIONS) --verbose --generate
+	./$(EXEC) --size $(SIZE) --frames $(FRAMES) --input $(INPUT) --gold $(GOLD) --iterations 1 --verbose --generate
 
 test:
 	./$(EXEC) --size $(SIZE) --frames $(FRAMES) --input $(INPUT) --gold $(GOLD) --iterations $(ITERATIONS) --verbose

@@ -79,9 +79,9 @@ maxpool_layer_kernels.o network_kernels.o avgpool_layer_kernels.o maxpool_layer_
 endif
 
 ifeq ($(LOGS), 1)
-LOGHELPERINC=-I$(RAD_DIR)/src/include/
-LOGHELPERLIB= -L$(RAD_DIR)/src/include/ -lLogHelper -DLOGS=1
-HELPFUL=-I$(RAD_DIR)/src/include/
+LOGHELPERINC=-I$(RADDIR)/src/include/
+LOGHELPERLIB= -L$(RADDIR)/src/include/ -lLogHelper -DLOGS=1
+HELPFUL=-I$(RADDIR)/src/include/
 endif
 
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
@@ -123,19 +123,19 @@ clean:
 
 test_pure_yolo:
 	#eval 	env LD_PRELOAD=/home/carol/NVBITFI/nvbit_release/tools/nvbitfi/profiler/profiler.so  
-	./$(TARGET) detect cfg/yolo.cfg $(RAD_DIR)/data/darknet/yolo_v2.weights data/dog.jpg
+	./$(TARGET) detect cfg/yolo.cfg $(RADDIR)/data/darknet/yolo_v2.weights data/dog.jpg
 	
 test:
-	./$(TARGET) test_radiation -d $(RAD_DIR)/data/darknet/fault_injection.csv -n 1 -s 0 -a 0 
+	./$(TARGET) test_radiation -d $(RADDIR)/data/darknet/fault_injection.csv -n 1 -s 0 -a 0
 	
 golden:
-	./$(TARGET) test_radiation -d $(RAD_DIR)/data/darknet/fault_injection.csv -n 1 -s 0 -a 0 > golden_stdout.txt 2>golden_stderr.txt
+	./$(TARGET) test_radiation -d $(RADDIR)/data/darknet/fault_injection.csv -n 1 -s 0 -a 0 > golden_stdout.txt 2>golden_stderr.txt
 	sed -i '/Iteration 0 - image/c\' golden_stdout.txt 
 	sed -i '/^$$/d' golden_stdout.txt
 
 
 generate:
-	./$(TARGET) test_radiation  -c $(RAD_DIR)/src/cuda/darknet_v2/cfg/yolo.cfg \
-								  -w $(RAD_DIR)/data/darknet/yolo_v2.weights \
-								  -g 1 -d $(RAD_DIR)/data/darknet/fault_injection.csv -s 0 -l   \
-								  $(RAD_DIR)/data/networks_img_list/fault_injection.txt -a 0
+	./$(TARGET) test_radiation  -c $(RADDIR)/src/cuda/darknet_v2/cfg/yolo.cfg \
+								  -w $(RADDIR)/data/darknet/yolo_v2.weights \
+								  -g 1 -d $(RADDIR)/data/darknet/fault_injection.csv -s 0 -l   \
+								  $(RADDIR)/data/networks_img_list/fault_injection.txt -a 0

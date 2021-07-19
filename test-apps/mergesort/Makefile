@@ -1,47 +1,96 @@
-CXX=g++-7
-
-TARGET = mergesort
-RAD=/home/carol/radiation-benchmarks
-LOGHELPER_INC=$(RAD)/src/include -I$(RAD)/src/cuda/common 
-LOGHELPER_LIB=$(RAD)/src/include 
-CUDA_BASE_DIR=/usr/local/cuda
-NVCC=$(CUDA_BASE_DIR)/bin/nvcc
-
-GENCODE=-gencode arch=compute_35,code=[sm_35,compute_35]
-GENCODE+= -gencode arch=compute_70,code=[sm_70,compute_70] #Titan V
-
-NVCC_FLAGS =  -DLOGS -I$(LOGHELPER_INC) -L$(LOGHELPER_LIB) 
-NVCC_FLAGS += -lLogHelper -Xptxas -v -I$(CUDA_BASE_DIR)/include/
-NVCC_FLAGS += -Xcompiler " -fopenmp" -Xcompiler "-O3" -ccbin $(CXX)
-NVCC_FLAGS += -I$(CUDA_BASE_DIR)/samples/common/inc
-LINK_FLAGS = -std=c++11 $(GENCODE) -lcudart -lcudadevrt
-
-all: $(TARGET)
-
-$(TARGET):
-	$(NVCC) -o mergesort bitonic.cu main.cpp mergeSort.cu mergeSort_host.cpp mergeSort_validate.cpp  $(NVCC_FLAGS) -L$(CUDA_LIB_DIR) $(LINK_FLAGS)
-
+CXX=g++
+EXEC=mergesort
+LOGS=1
+BUILDPROFILER=0
+DEBUG=0
 #SIZE=134217728
-SIZE=1048576 
+SIZE=1048576
+ITERATIONS=1
 
-INPUT=$(RAD)/data/mergesort/mergesort_input_134217728
-GOLD=$(RAD)/data/mergesort/mergesort_gold_$(SIZE)
+VPATH=./
+CUDAPATH=/usr/local/cuda
+NVCC=$(CUDAPATH)/bin/nvcc
 
+NVCCFLAGS= -std=c++14 -Xptxas -v -rdc=true -Xcompiler -fopenmp -Xcompiler -fPIC  -Xcompiler  -pthread 
+CXXFLAGS= -std=c++14 -O3 -fPIC -pthread -fopenmp
+
+RADDIR=/home/carol/radiation-benchmarks
+DATADIR=$(RADDIR)/data/mergesort
+INCLUDE= -I$(CUDAPATH)/include -I$(CUDAPATH)/samples/common/inc -I$(RADDIR)/src/include -I$(RADDIR)/src/cuda/common
+# Kepler, Volta
+SMS= 35 70 86
+$(foreach sm,$(SMS),$(eval ARCH += -gencode arch=compute_$(sm),code=sm_$(sm)))
+
+OBJDIR=./obj/
+OBJ= bitonic.o  main.o  mergeSort.o  mergeSort_host.o  mergeSort_validate.o
+
+ifeq ($(DEBUG), 1) 
+CXXFLAGS+=-O0 -g
+NVCCFLAGS+= -g -G
+endif
+
+ifeq ($(LOGS), 1)
+CXXFLAGS+= -DLOGS
+NVCCFLAGS+= -DLOGS
+LDFLAGS+= -L$(RADDIR)/src/include  -lLogHelper
+endif
+
+ifeq ($(BUILDPROFILER), 1)
+CXXFLAGS+= -DBUILDPROFILER
+NVCCFLAGS+= -DBUILDPROFILER
+LDFLAGS+= -L$(RADDIR)/src/cuda/common/lib -lNVMLWrapper -L$(CUDAPATH)/lib64/stubs -lnvidia-ml 
+endif
+
+LDFLAGS+= -L$(CUDAPATH)/lib64  -lcudart  -lcurand
+
+OBJS = $(addprefix $(OBJDIR), $(OBJ))
+DEPS = $(wildcard src/*.h) Makefile
+
+# It is necessary to multi compiler analysis
+PASSHOSTCC= -DNVCCOPTFLAGS="$(strip $(NVCCOPTFLAGS))"
+NVCCFLAGS+= -Xptxas -v $(NVCCOPTFLAGS) --optimize 3 $(PASSHOSTCC)
+
+all: mkdir $(EXEC)
+
+
+$(EXEC): $(OBJS)  
+	$(NVCC) $(ARCH) $^ -o $@ $(LDFLAGS) $(INCLUDE) $(NVCCFLAGS)
+
+$(OBJDIR)%.o: %.cpp $(DEPS)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(INCLUDE)
+	
+$(OBJDIR)%.o: %.cu $(DEPS)
+	$(NVCC) $(ARCH) $(NVCCFLAGS) -c $< -o $@ $(INCLUDE) 
+
+mkdir:
+	mkdir -p $(OBJDIR)
+	mkdir -p $(DATADIR)
+clean:
+	rm -f $(OBJDIR)* $(EXEC)
+	
+	
+generate:
+	 ./$(EXEC) -size=$(SIZE) -generate -verbose \
+	 		   -input=$(DATADIR)/input_$(SIZE) \
+	 		   -gold=$(DATADIR)/gold_$(SIZE) \
+	 		   -iterations=1 
+	 		   #-noinputensurance
+	 		   	
 test:
-	./$(TARGET) -size=$(SIZE)  -input=$(INPUT) -gold=$(GOLD) -iterations=1 -verbose
+	 ./$(EXEC) -size=$(SIZE) -verbose \
+	 		   -input=$(DATADIR)/input_$(SIZE) \
+	 		   -gold=$(DATADIR)/gold_$(SIZE) \
+	 		   -iterations=$(ITERATIONS)
+	 		   #-noinputensurance
 
 golden:
-	./$(TARGET) -size=$(SIZE)  -input=$(INPUT) -gold=$(GOLD) -iterations=1 -verbose > golden_stdout.txt 2>golden_stderr.txt
+	  ./$(EXEC) -size=$(SIZE) -verbose \
+	 		   -input=$(DATADIR)/input_$(SIZE) \
+	 		   -gold=$(DATADIR)/gold_$(SIZE) \
+	 		   -iterations=1 > golden_stdout.txt 2>golden_stderr.txt
 	sed -i '/LOGFILENAME/c\' golden_stdout.txt 
 	sed -i '/Time/c\' golden_stdout.txt 
 	sed -i '/time/c\' golden_stdout.txt 
 	sed -i '/^$$/d' golden_stdout.txt
 	sed -i '/Perf/c\' golden_stdout.txt
 	sed -i '/Starting/c\' golden_stdout.txt
-
-generate:
-	./$(TARGET) -generate -size=$(SIZE) -input=$(INPUT) -gold=$(GOLD) -iterations=1
-
-clean:
-	rm -f *.o *~ $(TARGET)
-

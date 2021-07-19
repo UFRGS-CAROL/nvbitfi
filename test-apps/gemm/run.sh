@@ -5,15 +5,15 @@ DMR=none
 ALPHA=1.0
 BETA=0.0
 SIZE=512
-DATADIR=/home/fernando/radiation-benchmarks/data/gemm
-
+DATADIR=/home/carol/radiation-benchmarks/data/gemm
 CUBLAS=0
 PRECISION=float
 CUDAPATH=/usr/local/cuda
 if [ $# -gt 0 ]; then
   CUDAPATH=$1
   PRECISION=$2
-  CUBLAS=$3
+  SIZE=$3
+  CUBLAS=$4
   if [ $CUBLAS -eq 1 ]; then
     USECUBLAS=--use_cublas
   fi

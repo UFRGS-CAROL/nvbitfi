@@ -14,7 +14,7 @@ all_apps = {
         'simple_add',  # binary name
         NVBITFI_HOME + '/test-apps/simple_add/',  # path to the binary file
         1,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'lava_mp': [
@@ -22,7 +22,7 @@ all_apps = {
         'lava_mp',  # binary name
         NVBITFI_HOME + '/test-apps/lava_mp/',  # path to the binary file
         1,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'gemm': [
@@ -38,7 +38,7 @@ all_apps = {
         'cudaBFS',  # binary name
         NVBITFI_HOME + '/test-apps/bfs/',  # path to the binary file
         1,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'accl': [
@@ -78,7 +78,7 @@ all_apps = {
         'darknet_v2',  # binary name
         NVBITFI_HOME + '/test-apps/darknet_v2/',  # path to the binary file
         5,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'darknet_v3': [
@@ -86,7 +86,7 @@ all_apps = {
         'darknet_v3_single',  # binary name
         NVBITFI_HOME + '/test-apps/darknet_v3/',  # path to the binary file
         5,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'darknet_rubens': [
@@ -94,7 +94,7 @@ all_apps = {
         'darknet',  # binary name
         NVBITFI_HOME + '/test-apps/darknet_rubens/',  # path to the binary file
         5,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'gaussian': [
@@ -102,7 +102,7 @@ all_apps = {
         'cudaGaussian',  # binary name
         NVBITFI_HOME + '/test-apps/gaussian/',  # path to the binary file
         1,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'lud': [
@@ -110,7 +110,7 @@ all_apps = {
         'cudaLUD',  # binary name
         NVBITFI_HOME + '/test-apps/lud/',  # path to the binary file
         1,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'nw': [
@@ -118,7 +118,7 @@ all_apps = {
         'nw',  # binary name
         NVBITFI_HOME + '/test-apps/nw/',  # path to the binary file
         2,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'trip_hotspot': [
@@ -126,7 +126,7 @@ all_apps = {
         'trip_hotspot',  # binary name
         NVBITFI_HOME + '/test-apps/trip_hotspot/',  # path to the binary file
         3,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'trip_mxm': [
@@ -134,7 +134,7 @@ all_apps = {
         'trip_mxm',  # binary name
         NVBITFI_HOME + '/test-apps/trip_mxm/',  # path to the binary file
         3,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'trip_lava': [
@@ -142,7 +142,7 @@ all_apps = {
         'trip_lava',  # binary name
         NVBITFI_HOME + '/test-apps/trip_lava/',  # path to the binary file
         3,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'darknet_lenet': [
@@ -150,7 +150,7 @@ all_apps = {
         'darknet',  # binary name
         NVBITFI_HOME + '/test-apps/darknet_lenet/',  # path to the binary file
         3,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
     'py_faster_rcnn': [
@@ -158,7 +158,7 @@ all_apps = {
         'py_faster_rcnn.py',  # binary name
         '/home/carol/radiation-benchmarks/src/cuda/py-faster-rcnn/',  # path to the binary file
         5,  # expected runtime
-        "",
+        ADDITIONAL_PARAMETERS,
     ],
 
     'trip_micro': [
@@ -168,7 +168,7 @@ all_apps = {
         'cuda_micro-fma_single',  # binary name
         NVBITFI_HOME + '/test-apps/trip_micro/',  # path to the binary file
         20,  # expected runtime
-        ""  # additional parameters to the run.sh
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 }
 

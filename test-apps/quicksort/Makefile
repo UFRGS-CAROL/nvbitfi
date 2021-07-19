@@ -10,12 +10,13 @@ SIZE=1048576
 VPATH=./
 CUDAPATH=/usr/local/cuda
 NVCC=$(CUDAPATH)/bin/nvcc
-RADDIR=/home/fernando/radiation-benchmarks
-INPUT=$(RADDIR)/data/quicksort/quicksort_input_134217728
-GOLD=$(RADDIR)/data/quicksort/quicksort_gold_$(SIZE)
+RADDIR=/home/carol/radiation-benchmarks
+DATADIR=$(RADDIR)/data/quicksort
+INPUT=$(DATADIR)/quicksort_input_134217728
+GOLD=$(DATADIR)/quicksort_gold_$(SIZE)
 
-NVCCFLAGS= -std=c++14 -O3 -Xptxas -v -rdc=true -Xcompiler -fopenmp
-CXXFLAGS= -std=c++14 -O3  -Xcompiler -fPIC  -Xcompiler  -pthread -Xcompiler -fopenmp
+NVCCFLAGS= -std=c++14 -Xptxas -v -rdc=true -Xcompiler -fopenmp  -Xcompiler -fPIC
+CXXFLAGS= -std=c++14 -O3 -fPIC -pthread -fopenmp
 
 INCLUDE= -I$(CUDAPATH)/include -I$(CUDAPATH)/samples/common/inc -I$(RADDIR)/src/include -I$(RADDIR)/src/cuda/common
 # Kepler, Volta
@@ -39,7 +40,7 @@ endif
 ifeq ($(BUILDPROFILER), 1)
 CXXFLAGS+= -DBUILDPROFILER
 NVCCFLAGS+= -DBUILDPROFILER
-LDFLAGS+= -L$(RADDIR)/src/cuda/common/lib -lNVMLWrapper -L$(CUDAPATH)/lib64/stubs -lnvidia-ml
+LDFLAGS+= -L$(RADDIR)/src/cuda/common/lib -lNVMLWrapper -L$(CUDAPATH)/lib64/stubs -lnvidia-ml 
 endif
 
 LDFLAGS+= -L$(CUDAPATH)/lib64  -lcudart  -lcurand
@@ -55,24 +56,25 @@ all: mkdir $(EXEC)
 
 
 $(EXEC): $(OBJS)  
-	$(NVCC) $(ARCH) $^ -o $@ $(LDFLAGS) $(INCLUDE) $(CXXFLAGS)
+	$(NVCC) $(ARCH) $^ -o $@ $(LDFLAGS) $(INCLUDE) $(NVCCFLAGS)
 
 $(OBJDIR)%.o: %.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@ $(INCLUDE)
 	
 $(OBJDIR)%.o: %.cu $(DEPS)
-	$(NVCC) $(ARCH) $(NVCCFLAGS) -c $< -o $@ $(INCLUDE) 
+	$(NVCC) -ccbin $(CXX) $(ARCH) $(NVCCFLAGS) -c $< -o $@ $(INCLUDE) 
 
 mkdir:
 	mkdir -p $(OBJDIR)
-
+	mkdir -p $(DATADIR)
+	
 clean:
 	rm -f $(OBJDIR)* $(EXEC)
 	
 	
 generate:
 	 ./$(EXEC) -size=$(SIZE) -generate -verbose \
-	 		   -input=$(INPUT)  -gold=$(GOLD) -iterations=$(ITERATIONS)
+	 		   -input=$(INPUT)  -gold=$(GOLD) -iterations=1
 	 		   #-noinputensurance
 	 		   	
 test:
@@ -81,7 +83,7 @@ test:
 	 		   #-noinputensurance
 
 golden:
-	./$(EXEC) -size=$(SIZE) -input=$(INPUT) -gold=$(GOLD) -iterations=$(ITERATIONS) -verbose > golden_stdout.txt 2>golden_stderr.txt
+	./$(EXEC) -size=$(SIZE) -input=$(INPUT) -gold=$(GOLD) -iterations=1 -verbose > golden_stdout.txt 2>golden_stderr.txt
 	sed -i '/LOGFILENAME/c\' golden_stdout.txt
 	sed -i '/Time/c\' golden_stdout.txt
 	sed -i '/time/c\' golden_stdout.txt

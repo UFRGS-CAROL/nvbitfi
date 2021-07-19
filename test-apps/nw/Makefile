@@ -1,35 +1,30 @@
-CXX=g++-7
-CXXFLAGS= -std=c++11 -o3 -fopenmp 
-TARGET=nw
+CXX=g++
+EXEC=nw
+DEBUG=0
 LOGS=1
+OMP=1
+BUILDPROFILER=0
+SIZE=16384
 ITERATIONS=1
-
-GPU?=1
-DEBUG?=0
-#for radiation setup
-OMP?=1
-
-SIZE?=16384
-#6384 #8192 #4096 
-ITERATIONS=1
-
 RADDIR=/home/carol/radiation-benchmarks
-DATA=$(RADDIR)/data/nw
-
-INPUT=$(DATA)/input_$(SIZE)
-GOLD=$(DATA)/gold_$(SIZE)
 PENALTY=10
+DATADIR=$(RADDIR)/data/nw
+INPUT=$(DATADIR)/input_$(SIZE)_$(PENALTY)
+GOLD=$(DATADIR)/gold_$(SIZE)_$(PENALTY)
 
 VPATH=./src/
-
 CUDAPATH=/usr/local/cuda
-NVCC=$(CUDAPATH)/bin/nvcc 
+NVCC=$(CUDAPATH)/bin/nvcc
 
-NVCCFLAGS= -std=c++11 -O3 -Xptxas -v  -Wno-deprecated-gpu-targets
+NVCCFLAGS= -std=c++11 -Xptxas -v  -Wno-deprecated-gpu-targets
+# NVCC optmizations flags
+NVCCOPTFLAGS=
+CXXFLAGS= -std=c++11 -o3  -fPIC -fopenmp -Wall -Wfatal-errors  -Wunknown-pragmas -Wunused-function
 
-
-ARCH= -gencode arch=compute_35,code=[sm_35,compute_35] #Kepler
-ARCH+= -gencode arch=compute_70,code=[sm_70,compute_70] #Titan V
+# This is what I use, uncomment if you know your arch and want to specify
+# Kepler, Volta
+SMS= 35 53 70 86
+$(foreach sm,$(SMS), $(eval ARCH += -gencode arch=compute_$(sm),code=sm_$(sm)))
 
 INCLUDE= -I./src -I$(CUDAPATH)/include -I$(CUDAPATH)/samples/common/inc -I$(RADDIR)/src/include -I$(RADDIR)/src/cuda/common
 
@@ -47,38 +42,53 @@ NVCCFLAGS+= -DLOGS
 LDFLAGS+= -L$(RADDIR)/src/include  -lLogHelper
 endif
 
-LDFLAGS+= -L$(CUDAPATH)/lib64  -lcudart  -lcurand -lcudadevrt  -Wno-deprecated-gpu-targets
+ifeq ($(OMP), 1) 
+CFLAGS+= -DOMP -fopenmp
+endif
+
+
+ifeq ($(BUILDPROFILER), 1)
+CXXFLAGS+= -DBUILDPROFILER
+LDFLAGS+= -L../common/lib -lNVMLWrapper -L$(CUDAPATH)/lib64/stubs -lnvidia-ml 
+endif
+
+LDFLAGS+= -lm -pthread -lstdc++ -L$(CUDAPATH)/lib64  -lcudart  -lcurand -lcudadevrt  -Wno-deprecated-gpu-targets
 
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
 DEPS = $(wildcard src/*.h) Makefile
 
 
-all: mkdir $(TARGET)
+# It is necessary to multi compiler analysis
+PASSHOSTCC= -DNVCCOPTFLAGS="$(strip $(NVCCOPTFLAGS))"
+NVCCFLAGS+= -Xptxas -v $(NVCCOPTFLAGS) --optimize 3 $(PASSHOSTCC)
 
-$(TARGET): $(OBJS)
-	$(CXX) $(COMMON) $(CFLAGS) $^ $(INCLUDE) -o $@  $(LDFLAGS)  
+all: mkdir $(EXEC)
+
+$(EXEC): $(OBJS)  
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) $(INCLUDE)
 
 $(OBJDIR)%.o: %.cpp $(DEPS)
-	$(CXX) $(COMMON) $(CFLAGS) -c $< -o $@ $(INCLUDE) 
-
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(INCLUDE)
+	
 $(OBJDIR)%.o: %.cu $(DEPS)
-	$(NVCC) -ccbin $(CXX) $(ARCH) $(COMMON) $(NVCCFLAGS) --compiler-options "$(CFLAGS)" $(INCLUDE) -c $< -o $@ 
-
+	$(NVCC) $(ARCH) $(NVCCFLAGS) -c $< -o $@ $(INCLUDE) 
 
 mkdir:
-	mkdir -p $(OBJDIR) $(DATA)
+	mkdir -p $(OBJDIR)
+	mkdir -p $(DATADIR)
 
 clean:
-	rm -f $(OBJDIR)* $(TARGET)
+	rm -f $(OBJDIR)* $(EXEC)
 
 generate:
-	./$(TARGET) $(SIZE) $(PENALTY) $(INPUT) $(GOLD) $(ITERATIONS) 1
+	./$(EXEC) $(SIZE) $(PENALTY) $(INPUT) $(GOLD) 1 1
 
 test:
-	./$(TARGET) $(SIZE) $(PENALTY) $(INPUT) $(GOLD) $(ITERATIONS) 0
+	./$(EXEC) $(SIZE) $(PENALTY) $(INPUT) $(GOLD) $(ITERATIONS) 0
+
 
 golden:
-	./$(TARGET) $(SIZE) $(PENALTY) $(INPUT) $(GOLD) $(ITERATIONS) 0 > golden_stdout.txt 2>golden_stderr.txt
+	./$(EXEC) $(SIZE) $(PENALTY) $(INPUT) $(GOLD) $(ITERATIONS) 0 > golden_stdout.txt 2>golden_stderr.txt
 	sed -i '/kernel time/c\REPLACED.' golden_stdout.txt 
 	sed -i '/LOGFILE/c\REPLACED.' golden_stdout.txt 
 	sed -i '/read../c\REPLACED.' golden_stdout.txt 
