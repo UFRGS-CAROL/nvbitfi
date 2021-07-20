@@ -123,10 +123,10 @@ golden:
 			--precision $(PRECISION) --dmr $(DMR) \
 			--iterations $(ITERATIONS)  \
 			--alpha $(ALPHA) --beta $(BETA) \
-			--input_a $(DATADIR)/gemm/a_$(OUTPUTPREFIX) \
-			--input_b $(DATADIR)/gemm/b_$(OUTPUTPREFIX) \
-			--input_c $(DATADIR)/gemm/c_$(OUTPUTPREFIX) \
-			--gold    $(DATADIR)/gemm/g_$(OUTPUTPREFIX) $(USECUBLAS) $(USETENSORS)  > golden_stdout.txt 2>golden_stderr.txt
+			--input_a $(DATADIR)/a_$(OUTPUTPREFIX) \
+			--input_b $(DATADIR)/b_$(OUTPUTPREFIX) \
+			--input_c $(DATADIR)/c_$(OUTPUTPREFIX) \
+			--gold    $(DATADIR)/g_$(OUTPUTPREFIX) $(USECUBLAS) $(USETENSORS)  > golden_stdout.txt 2>golden_stderr.txt
 	sed -i '/LOGFILENAME/c\' golden_stdout.txt 
 	sed -i '/Time/c\' golden_stdout.txt 
 	sed -i '/time/c\' golden_stdout.txt 
