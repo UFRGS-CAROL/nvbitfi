@@ -71,21 +71,21 @@ clean:
 	
 generate:
 	 ./$(EXEC) -size=$(SIZE) -generate -verbose \
-	 		   -input=$(DATADIR)/input_$(SIZE) \
+	 		   -input=$(DATADIR)/input_134217728 \
 	 		   -gold=$(DATADIR)/gold_$(SIZE) \
 	 		   -iterations=1 
 	 		   #-noinputensurance
 	 		   	
 test:
 	 ./$(EXEC) -size=$(SIZE) -verbose \
-	 		   -input=$(DATADIR)/input_$(SIZE) \
+	 		   -input=$(DATADIR)/input_134217728 \
 	 		   -gold=$(DATADIR)/gold_$(SIZE) \
 	 		   -iterations=$(ITERATIONS)
 	 		   #-noinputensurance
 
 golden:
 	  ./$(EXEC) -size=$(SIZE) -verbose \
-	 		   -input=$(DATADIR)/input_$(SIZE) \
+	 		   -input=$(DATADIR)/input_134217728 \
 	 		   -gold=$(DATADIR)/gold_$(SIZE) \
 	 		   -iterations=1 > golden_stdout.txt 2>golden_stderr.txt
 	sed -i '/LOGFILENAME/c\' golden_stdout.txt 
