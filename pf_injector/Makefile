@@ -17,7 +17,9 @@ DUMMY=0
 
 SOURCES=$(wildcard *.cu)
 OBJECTS=$(SOURCES:.cu=.o)
-ARCH=35
+ARCH= -gencode arch=compute_70,code=[sm_70,compute_70]
+ARCH+= -gencode arch=compute_35,code=[sm_35,compute_35]
+ARCH+= -gencode arch=compute_86,code=[sm_35,compute_86]
 
 NVBIT_TOOL=pf_injector.so
 
