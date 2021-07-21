@@ -19,7 +19,7 @@ NVCC_PATH=-L $(subst bin/nvcc,lib64,$(shell which nvcc | tr -s /))
 SOURCES=$(wildcard *.cu)
 OBJECTS=$(SOURCES:.cu=.o)
 ARCH= -gencode arch=compute_70,code=[sm_70,compute_70]
-ARCH+= -gencode arch=compute_35,code=[sm_35,compute_35]
+#ARCH+= -gencode arch=compute_35,code=[sm_35,compute_35]
 ARCH+= -gencode arch=compute_86,code=[sm_35,compute_86]
 
 # Profiling is often slow. Using an approximate profile can speed it up by
