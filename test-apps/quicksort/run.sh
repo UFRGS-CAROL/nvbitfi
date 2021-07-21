@@ -1,7 +1,6 @@
 #!/bin/bash
 
 RADDIR=/home/carol/radiation-benchmarks/data/quicksort
-
 SIZE=1048576
 CUDAPATH=/usr/local/cuda
 if [ $# -gt 0 ]; then

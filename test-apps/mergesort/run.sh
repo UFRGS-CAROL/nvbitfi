@@ -8,8 +8,7 @@ if [ $# -gt 0 ]; then
   SIZE=$2
 fi
 
-
-eval ${PRELOAD_FLAG}  ${BIN_DIR}/mergesort -size=${SIZE} -input=${RADDIR}/input_134217728 -gold=${RADDIR}/gold_${SIZE} -iterations=1 -verbose > stdout.txt 2> stderr.txt
+eval LD_LIBRARY_PATH=${CUDAPATH}/lib64:$LD_LIBRARY_PATH  ${PRELOAD_FLAG}  ${BIN_DIR}/mergesort -size=${SIZE} -input=${RADDIR}/input_134217728 -gold=${RADDIR}/gold_${SIZE} -iterations=1 -verbose > stdout.txt 2> stderr.txt
 sed -i '/LOGFILENAME/c\' stdout.txt 
 sed -i '/Time/c\' stdout.txt 
 sed -i '/time/c\' stdout.txt 
