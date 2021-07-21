@@ -9,7 +9,7 @@ if [ $# -gt 0 ]; then
 fi
 
 
-eval ${PRELOAD_FLAG}  ${BIN_DIR}/mergesort -size=${SIZE} -input=${RADDIR}/mergesort_input_134217728 -gold=${RADDIR}/mergesort_gold_${SIZE} -iterations=1 -verbose > stdout.txt 2> stderr.txt
+eval ${PRELOAD_FLAG}  ${BIN_DIR}/mergesort -size=${SIZE} -input=${RADDIR}/input_134217728 -gold=${RADDIR}/gold_${SIZE} -iterations=1 -verbose > stdout.txt 2> stderr.txt
 sed -i '/LOGFILENAME/c\' stdout.txt 
 sed -i '/Time/c\' stdout.txt 
 sed -i '/time/c\' stdout.txt 
