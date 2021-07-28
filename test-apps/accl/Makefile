@@ -13,7 +13,7 @@ FRAMES=7
 RADDIR=/home/carol/radiation-benchmarks
 DATADIR=$(RADDIR)/data/accl
 GOLD=$(DATADIR)/gold_$(SIZE)_$(FRAMES).data
-INPUT=$(DATADIR)/7Frames.pgm
+INPUT=$(DATADIR)/$(FRAMES)Frames.pgm
 
 VPATH=./src/
 

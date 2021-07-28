@@ -1,7 +1,6 @@
 #!/bin/bash
 
-RADDIR=/home/carol/radiation-benchmarks
-DIR=${RADDIR}/data/gaussian
+RADDIR=/home/carol/radiation-benchmarks/data/gaussian
 CUDAPATH=/usr/local/cuda
 SIZE=512
 if [ $# -gt 0 ]; then
