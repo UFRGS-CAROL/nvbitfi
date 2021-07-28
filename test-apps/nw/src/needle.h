@@ -21,7 +21,7 @@
 
 typedef unsigned KErrorsType;
 
-__device__ static KErrorsType gpukerrors;
+__device__ KErrorsType gpukerrors;
 
 __global__ void needle_cuda_shared_2(int* referrence, int* matrix_cuda,
 		int cols, int penalty, int i, int block_width);

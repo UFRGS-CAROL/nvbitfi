@@ -4,12 +4,13 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <cmath>
 
 #include "cuda_utils.h"
 #include "generic_log.h"
 #include "Parameters.h"
 #include "utils.h"
+
+extern std::string get_multi_compiler_header();
 
 // create both matrix and right hand side, Ke Wang 2013/08/12 11:51:06
 /**
@@ -98,6 +99,7 @@ int main(int argc, char *argv[]) {
 	std::string test_info = "size:" + std::to_string(parameters.size);
 	test_info += " maxblocksize:" + std::to_string(MAXBLOCKSIZE);
 	test_info += " blocksizexy:" + std::to_string(BLOCK_SIZE_XY);
+	test_info += " " + get_multi_compiler_header();
 
 	rad::Log log(test_name, test_info);
 

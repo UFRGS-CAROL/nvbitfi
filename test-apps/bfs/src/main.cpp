@@ -9,6 +9,8 @@
 #include "Parameters.h"
 #include "generic_log.h"
 
+extern std::string get_multi_compiler_header();
+
 int BFSGraph(rad::DeviceVector<Node>& d_graph_nodes,
 		rad::DeviceVector<bool_t>& d_graph_mask,
 		rad::DeviceVector<bool_t>& d_updating_graph_mask,
@@ -80,7 +82,7 @@ std::tuple<int, int> read_input_file(std::vector<Node>& h_graph_nodes,
 		throw_line("Error Reading graph file " + input_f);
 	}
 
-	return std::tuple<int, int>(no_of_nodes, source);
+	return {no_of_nodes, source};
 }
 
 size_t compare_output(std::vector<std::vector<int>>& output,
@@ -160,6 +162,7 @@ int main(int argc, char** argv) {
 	test_info += " source:" + std::to_string(source);
 	test_info += " inputFile:" + parameters.input;
 	test_info += " goldFile:" + parameters.gold;
+	test_info += " " + get_multi_compiler_header();
 
 	std::string test_name = "cudaBFS";
 	rad::Log log(test_name, test_info);
