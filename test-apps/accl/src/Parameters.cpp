@@ -29,7 +29,7 @@ Parameters::Parameters(int argc, char* argv[]) {
 	}
 
 	//if it is ADD, MUL, or MAD use maximum allocation
-	this->sm_count = 1; //dev_prop.multiProcessorCount;
+	this->sm_count = dev_prop.multiProcessorCount;
 
 	if (argc < 6) {
 		throw_line(

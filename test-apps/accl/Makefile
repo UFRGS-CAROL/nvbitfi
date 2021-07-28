@@ -37,8 +37,8 @@ NVCCFLAGS+= -g -G
 endif
 
 ifeq ($(LOGS), 1)
-CXXFLAGS+= -DLOGS -I$(RADDIR)/src/include
-NVCCFLAGS+= -DLOGS -I$(RADDIR)/src/include
+CXXFLAGS+= -DLOGS
+NVCCFLAGS+= -DLOGS
 LDFLAGS+= -L$(RADDIR)/src/include  -lLogHelper
 endif
 
