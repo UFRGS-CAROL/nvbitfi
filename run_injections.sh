@@ -3,7 +3,7 @@
 # stop after first error
 set -e
 
-if [ $# -ne 4 ]; then
+if [ $# -ne 3 ]; then
   echo "$0 <BENCHMARK> <FAULTS> <ADDITIONAL PARAMETERS LIST between \"\">"
   exit 1
 fi
