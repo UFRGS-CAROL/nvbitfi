@@ -13,7 +13,7 @@ all_apps = {
         NVBITFI_HOME + '/test-apps/simple_add',  # workload directory
         'simple_add',  # binary name
         NVBITFI_HOME + '/test-apps/simple_add/',  # path to the binary file
-        1,  # expected runtime
+        2,  # expected runtime
         ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
@@ -21,7 +21,7 @@ all_apps = {
         NVBITFI_HOME + '/test-apps/lava_mp',  # workload directory
         'lava_mp',  # binary name
         NVBITFI_HOME + '/test-apps/lava_mp/',  # path to the binary file
-        1,  # expected runtime
+        5,  # expected runtime
         ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
@@ -37,7 +37,7 @@ all_apps = {
         NVBITFI_HOME + '/test-apps/bfs',  # workload directory
         'cudaBFS',  # binary name
         NVBITFI_HOME + '/test-apps/bfs/',  # path to the binary file
-        1,  # expected runtime
+        3,  # expected runtime
         ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
@@ -53,7 +53,7 @@ all_apps = {
         NVBITFI_HOME + '/test-apps/mergesort',  # workload directory
         'mergesort',  # binary name
         NVBITFI_HOME + '/test-apps/mergesort/',  # path to the binary file
-        1,  # expected runtime
+        5,  # expected runtime
         ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
@@ -69,7 +69,7 @@ all_apps = {
         NVBITFI_HOME + '/test-apps/hotspot',  # workload directory
         'hotspot',  # binary name
         NVBITFI_HOME + '/test-apps/hotspot/',  # path to the binary file
-        2,  # expected runtime
+        3,  # expected runtime
         ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
@@ -101,7 +101,7 @@ all_apps = {
         NVBITFI_HOME + '/test-apps/gaussian',  # workload directory
         'cudaGaussian',  # binary name
         NVBITFI_HOME + '/test-apps/gaussian/',  # path to the binary file
-        1,  # expected runtime
+        3,  # expected runtime
         ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
@@ -109,7 +109,7 @@ all_apps = {
         NVBITFI_HOME + '/test-apps/lud',  # workload directory
         'cudaLUD',  # binary name
         NVBITFI_HOME + '/test-apps/lud/',  # path to the binary file
-        1,  # expected runtime
+        3,  # expected runtime
         ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
@@ -117,7 +117,7 @@ all_apps = {
         NVBITFI_HOME + '/test-apps/nw',  # workload directory
         'nw',  # binary name
         NVBITFI_HOME + '/test-apps/nw/',  # path to the binary file
-        2,  # expected runtime
+        3,  # expected runtime
         ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
 
