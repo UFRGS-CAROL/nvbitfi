@@ -33,7 +33,6 @@ CXXFLAGS= -I$(CUDAPATH)/include -L$(CUDAPATH)/lib64/ -lcudart  -std=c++11
 TARGET=cuda_hotspot
 RUN_SOURCES=./cuda_hotspot.cu
 
-
 ifeq ($(LOGS), 1)
 #INCLUDE+= -I$(LOGHELPER_INC)
 NVCCFLAGS+= -DLOGS -lLogHelper 
