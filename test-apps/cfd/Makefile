@@ -3,7 +3,7 @@ EXEC=cudaCFD
 LOGS=1
 BUILDPROFILER=0
 DEBUG=0
-ITERATIONS=10
+ITERATIONS=1
 STREAMS=1
 
 VPATH=./src
@@ -78,7 +78,7 @@ test:
 	
 golden:
 	./$(EXEC) --streams $(STREAMS) --input $(INPUT) --gold $(GOLD) --iterations $(ITERATIONS) --verbose > golden_stdout.txt 2>golden_stderr.txt
-	sed -i '/kernel time/c\REPLACED.' golden_stdout.txt
+	sed -i '/Kernel time/c\REPLACED.' golden_stdout.txt
 	sed -i '/LOGFILE/c\REPLACED.' golden_stdout.txt
 	sed -i '/read../c\REPLACED.' golden_stdout.txt
 	sed -i '/^$$/d' golden_stdout.txt
