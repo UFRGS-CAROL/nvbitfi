@@ -112,7 +112,6 @@ all_apps = {
         3,  # expected runtime
         ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
-
     'nw': [
         NVBITFI_HOME + '/test-apps/nw',  # workload directory
         'nw',  # binary name
@@ -120,7 +119,13 @@ all_apps = {
         3,  # expected runtime
         ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
     ],
-
+    'cfd': [
+        NVBITFI_HOME + '/test-apps/cfd',  # workload directory
+        'cfd',  # binary name
+        NVBITFI_HOME + '/test-apps/cfd/',  # path to the binary file
+        3,  # expected runtime
+        ADDITIONAL_PARAMETERS  # additional parameters to the run.sh
+    ],
     'trip_hotspot': [
         NVBITFI_HOME + '/test-apps/trip_hotspot',  # workload directory
         'trip_hotspot',  # binary name

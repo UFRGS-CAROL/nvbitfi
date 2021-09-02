@@ -9,7 +9,7 @@ STREAMS=1
 VPATH=./src
 CUDAPATH=/usr/local/cuda
 NVCC=$(CUDAPATH)/bin/nvcc
-RADDIR=../../..
+RADDIR=/home/carol/radiation-benchmarks
 DATADIR=$(RADDIR)/data/cfd
 INPUT_BASE=missile.domn.0.2M
 INPUT=$(DATADIR)/$(INPUT_BASE)
@@ -76,3 +76,9 @@ generate:
 test:
 	./$(EXEC) --streams $(STREAMS) --input $(INPUT) --gold $(GOLD) --iterations $(ITERATIONS) --verbose
 	
+golden:
+	./$(EXEC) --streams $(STREAMS) --input $(INPUT) --gold $(GOLD) --iterations $(ITERATIONS) --verbose > golden_stdout.txt 2>golden_stderr.txt
+	sed -i '/kernel time/c\REPLACED.' golden_stdout.txt
+	sed -i '/LOGFILE/c\REPLACED.' golden_stdout.txt
+	sed -i '/read../c\REPLACED.' golden_stdout.txt
+	sed -i '/^$$/d' golden_stdout.txt
