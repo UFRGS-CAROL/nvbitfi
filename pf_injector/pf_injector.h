@@ -18,7 +18,7 @@
 #ifndef PF_INJECTOR_H
 #define PF_INJECTOR_H
 
-#define MAX_KNAME_SIZE 1000
+//#define MAX_KNAME_SIZE 1000
 
 typedef struct {
   uint32_t injSMID; // 0 - max SMs

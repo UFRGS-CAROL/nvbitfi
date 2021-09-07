@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <assert.h>
+#include <cstdint>
+#include <cstdio>
+#include <cassert>
 #include <pthread.h>
 #include <string>
 #include <fstream>
 #include <vector>
-#include <map>
 #include <algorithm>
 #include <iostream>
-#include <sstream>
-#include <iterator>
-#include <signal.h>
-#include <unistd.h>
+#include <csignal>
 #include <unordered_set>
-
-#include "nvbit_tool.h"
 #include "nvbit.h"
-#include "utils/utils.h"
 
 #include "globals.h"
 #include "pf_injector.h"
@@ -43,7 +36,7 @@ int limit = INT_MAX;
 
 // injection parameters input filename: This file is created the the script
 // that launched error injections
-std::string injInputFilename = "nvbitfi-injection-info.txt";
+std::string injInputFilename;
 
 pthread_mutex_t mutex;
 
@@ -67,7 +60,7 @@ void print_inj_info() {
 }
 
 // Parse error injection site info from a file. This should be done on host side.
-void parse_params(std::string filename) {
+void parse_params(const std::string &filename) {
     static bool parse_flag = false; // file will be parsed only once - performance enhancement
     if (!parse_flag) {
         parse_flag = true;
@@ -133,12 +126,12 @@ void INThandler(int sig) {
 void nvbit_at_init() {
     /* just make sure all managed variables are allocated on GPU */
     setenv("CUDA_MANAGED_FORCE_DEVICE_ALLOC", "1", 1);
-
+    injInputFilename = "nvbitfi-injection-info.txt";
     /* we get some environment variables that are going to be use to selectively
      * instrument (within a interval of kernel indexes and instructions). By
      * default we instrument everything. */
     if (getenv("TOOL_VERBOSE")) {
-        verbose = atoi(getenv("TOOL_VERBOSE"));
+        verbose = std::stoi(getenv("TOOL_VERBOSE"));
     } else {
         verbose = 0;
     }
@@ -150,7 +143,7 @@ void nvbit_at_init() {
         injOutputFilename = getenv("OUTPUT_INJECTION_LOG");
     }
     if (getenv("INSTRUMENTATION_LIMIT")) {
-        limit = atoi(getenv("INSTRUMENTATION_LIMIT"));
+        limit = std::stoi(getenv("INSTRUMENTATION_LIMIT"));
     }
 
     // GET_VAR_INT(verbose, "TOOL_VERBOSE", 0, "Enable verbosity inside the tool (1, 2, 3,..)");
@@ -164,7 +157,7 @@ void nvbit_at_init() {
 }
 
 /* Set used to avoid re-instrumenting the same functions multiple times */
-std::unordered_set <CUfunction> already_instrumented;
+std::unordered_set<CUfunction> already_instrumented;
 
 
 void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
@@ -174,14 +167,13 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 
     /* Get related functions of the kernel (device function that can be
      * called by the kernel) */
-    std::vector <CUfunction> related_functions =
-            nvbit_get_related_functions(ctx, func);
+    std::vector<CUfunction> related_functions = nvbit_get_related_functions(ctx, func);
 
     /* add kernel itself to the related function vector */
     related_functions.push_back(func);
 
     /* iterate on function */
-    for (auto f : related_functions) {
+    for (auto f: related_functions) {
         /* "recording" function was instrumented, if set insertion failed
          * we have already encountered this function */
         if (!already_instrumented.insert(f).second) {
@@ -209,7 +201,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                 }
 
                 // Tokenize the instruction
-                std::vector <std::string> tokens;
+                std::vector<std::string> tokens;
                 std::string buf; // a buffer string
                 std::stringstream ss(i->getSass()); // Insert the string into a stream
                 while (ss >> buf)
@@ -240,8 +232,8 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                         }
 
                         nvbit_insert_call(i, "inject_error", IPOINT_AFTER);
-                        nvbit_add_call_arg_const_val64(i, (uint64_t) & inj_info);
-                        nvbit_add_call_arg_const_val64(i, (uint64_t) & verbose_device);
+                        nvbit_add_call_arg_const_val64(i, (uint64_t) &inj_info);
+                        nvbit_add_call_arg_const_val64(i, (uint64_t) &verbose_device);
 
                         nvbit_add_call_arg_const_val32(i, destGPRNum); // destination GPR register number
                         if (destGPRNum != -1) {
@@ -278,7 +270,7 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
 
         /* cast params to cuLaunch_params since if we are here we know these are
          * the right parameters type */
-        cuLaunch_params *p = (cuLaunch_params *) params;
+        auto *p = (cuLaunch_params *) params;
 
         if (!is_exit) {
             pthread_mutex_lock(&mutex);
@@ -300,10 +292,10 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
                 cudaError_t le = cudaGetLastError();
 
                 std::string kname = removeSpaces(nvbit_get_func_name(ctx, p->f));
-                int num_ctas = 0;
+                unsigned num_ctas = 0;
                 if (cbid == API_CUDA_cuLaunchKernel_ptsz ||
                     cbid == API_CUDA_cuLaunchKernel) {
-                    cuLaunchKernel_params *p2 = (cuLaunchKernel_params *) params;
+                    auto *p2 = (cuLaunchKernel_params *) params;
                     num_ctas = p2->gridDimX * p2->gridDimY * p2->gridDimZ;
                 }
                 assert(fout.good());

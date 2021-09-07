@@ -15,8 +15,8 @@
  */
 
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 
 #include "nvbit_reg_rw.h"
 #include "utils/utils.h"
@@ -26,7 +26,7 @@
 extern "C" __device__ __noinline__ void
 inject_error(uint64_t piinfo, uint64_t pverbose_device, int destGPRNum, int regval, int numDestGPRs, int maxRegs) {
 
-    inj_info_t *inj_info = (inj_info_t *) piinfo;
+    auto inj_info = (inj_info_t *) piinfo;
     uint32_t verbose_device = *((uint32_t *) pverbose_device);
 
     uint32_t smid;
@@ -46,7 +46,7 @@ inject_error(uint64_t piinfo, uint64_t pverbose_device, int destGPRNum, int regv
         injAfterVal = injBeforeVal;
     } else {
         injAfterVal = injBeforeVal ^ inj_info->injMask;
-        nvbit_write_reg(destGPRNum, injAfterVal);
+        nvbit_write_reg(destGPRNum, int32_t(injAfterVal));
     }
     // updating counter/flag to check whether the error was injected
     if (verbose_device)
