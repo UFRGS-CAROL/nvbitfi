@@ -45,7 +45,7 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd):
         fault_site_df = fault_site_df.groupby(["fault_location", "instruction", "LANEID", "warp_id", "SMID"])
         for name, group in fault_site_df:
             fault_location = group["fault_location"].unique()[0]
-            fault_location = re.sub(r"-*=*[ ]*\"*\[*]*", "", fault_location)
+            fault_location = re.sub(r"-*=*[ ]*\"*\[*]*[.txt]*", "", fault_location)
             to_csv_df = group[["instruction", "LANEID", "warp_id", "SMID", "faulty_out", "golden_out"]]
             # IF there is a useful fault to be injected
             if to_csv_df.empty is False:
