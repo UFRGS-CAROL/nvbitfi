@@ -1,9 +1,12 @@
 #!/usr/bin/python3.8
 import argparse
 import datetime
+import re
+
 import time
 import logging
 import pandas as pd
+import yaml
 
 from commom import execute_cmd, OPCODES
 
@@ -22,36 +25,41 @@ def read_the_permanent_fault_error_file(input_file):
     df = df.dropna(how="all").dropna(how="all", axis="columns")
     df.columns = ["golden_out", "faulty_out", "fault_location", "input1", "input2", "input3",
                   "LANEID", "CTA", "NCTA", "warp_id", "gwarp_id", "SMID", "instruction"]
-
-    df["golden_out"] = df["golden_out"].apply(int, base=16)
-    df["input1"] = df["input1"].apply(int, base=16)
-    df["input2"] = df["input2"].apply(int, base=16)
-    df["input3"] = df["input3"].apply(int, base=16)
-
-    print(df.groupby(["fault_location", "instruction", "warp_id", "SMID"]).count().shape)
-    print(df.groupby(["fault_location", "instruction", "LANEID", "warp_id", "SMID"]).count().shape)
-    print(df)
+    df = df[df["faulty_out"] != "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"]
+    # ["fault_location", "instruction", "LANEID", "warp_id", "SMID"]
+    # print(fault_location_groups)
+    # print(df)
     return df
 
 
-def inject_permanent_faults(error_df):
-    # logging.info(f"Staring the fault injection for {error_list.shape[0]} faults")
-    # output_log = "nvbitfi-injection-log-temp.txt"
-    # nvbit_injection_info = "nvbitfi-injection-info.txt"
-    # execute_fi = f"eval LD_PRELOAD={path_to_pf_lib}/pf_injector.so {app_cmd}"
-    # for fault_id, descriptor in enumerate(error_list):
-    #     # Write the fault description
-    #     descriptor.write_to_file(nvbit_injection_info)
-    #     # Execute the fault injection
-    #     fault_output_file = f"fault_{fault_id}.txt"
-    #     crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1", return_error_code=True)
-    #     if crash_code:
-    #         logging.exception(f"Crash code at fault injection {crash_code}")
-    #
-    #     compact_fault = f"tar czf fault_{fault_id}.tar.gz {fault_output_file} {output_log} {nvbit_injection_info}"
-    #     execute_cmd(cmd=compact_fault)
-    #     execute_cmd(cmd=f"rm {fault_output_file} {output_log} {nvbit_injection_info}")
-    pass
+def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd):
+    fault_location_groups = error_df["fault_location"].unique()
+    logging.info(f"Staring the fault injection for {error_df.shape[0]} faults")
+    output_log = "nvbitfi-injection-log-temp.txt"
+    nvbit_injection_info = "nvbitfi-injection-info.txt"
+    execute_fi = f"eval LD_PRELOAD={path_to_nvbitfi}/pf_injector/pf_injector.so {app_cmd}"
+
+    for fault_id, fault_location in enumerate(fault_location_groups):
+        fault_site_df = error_df[error_df["fault_location"] == fault_location]
+        fault_site_df = fault_site_df.groupby(["fault_location", "instruction", "LANEID", "warp_id", "SMID"])
+        for name, group in fault_site_df:
+            fault_location = group["fault_location"].unique()[0]
+            fault_location = re.sub(r"-*=*[ ]*\"*\[*]*", "", fault_location)
+            to_csv_df = group[["instruction", "LANEID", "warp_id", "SMID", "faulty_out", "golden_out"]]
+            # IF there is a useful fault to be injected
+            if to_csv_df.empty is False:
+                to_csv_df.to_csv(nvbit_injection_info, sep=";", index=None, header=None)
+
+                # Execute the fault injection
+                fault_output_file = f"fault_{fault_id}_{fault_location}.txt"
+                crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1", return_error_code=True)
+                if crash_code:
+                    logging.exception(f"Crash code at fault injection {crash_code}")
+                    raise
+
+                compact_fault = f"tar czf fault_{fault_id}.tar.gz {fault_output_file} {output_log} {nvbit_injection_info}"
+                execute_cmd(cmd=compact_fault)
+                execute_cmd(cmd=f"rm {fault_output_file} {output_log} {nvbit_injection_info}")
 
 
 def main():
@@ -64,9 +72,16 @@ def main():
                         datefmt='%m/%d/%Y %H:%M:%S')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--errorfile", help="Input file that contains the error input for each operand")
+    parser.add_argument("--errorfile", help="Input file that contains the error input for each operand", required=True)
+    parser.add_argument("--appcfg", default="./example.yaml",
+                        help="A YAML configuration file that contains the app directory and execute cmd. See example")
     args = parser.parse_args()
     error_input_file = args.errorfile
+    with open(args.appcfg, 'r') as fp:
+        parameters = yaml.load(fp, Loader=yaml.SafeLoader)
+
+    nvbitfi_path = parameters["nvbitfipath"]
+    app_command = parameters["appcommand"]
     time_reading_error_file = time.time()
     error_df = read_the_permanent_fault_error_file(input_file=error_input_file)
     time_reading_error_file = time.time() - time_reading_error_file
@@ -74,7 +89,7 @@ def main():
 
     # Inject the faults
     time_fault_injection = time.time()
-    inject_permanent_faults(error_df=error_df)
+    inject_permanent_faults(error_df=error_df, path_to_nvbitfi=nvbitfi_path, app_cmd=app_command)
     time_fault_injection = time.time() - time_fault_injection
     logging.debug(f"Time spent on the fault injection {datetime.timedelta(seconds=time_fault_injection)}")
 

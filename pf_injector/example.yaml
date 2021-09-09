@@ -1,0 +1,5 @@
+# Put in app_command the binary file and the parameters to execute
+appcommand: /home/fernando/git_research/nvbitfi/test-apps/simple_add/simple_add
+
+# Path to the NVBITFI fault injector
+nvbitfipath: /home/fernando/git_research/nvbitfi
