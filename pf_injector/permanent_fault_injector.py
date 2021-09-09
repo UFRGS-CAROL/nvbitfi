@@ -26,6 +26,7 @@ def read_the_permanent_fault_error_file(input_file):
     df.columns = ["golden_out", "faulty_out", "fault_location", "input1", "input2", "input3",
                   "LANEID", "CTA", "NCTA", "warp_id", "gwarp_id", "SMID", "instruction"]
     df = df[df["faulty_out"] != "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"]
+    df["instruction"] = df["instruction"].apply(OPCODES.index)
     # ["fault_location", "instruction", "LANEID", "warp_id", "SMID"]
     # print(fault_location_groups)
     # print(df)
@@ -51,13 +52,15 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd):
                 to_csv_df.to_csv(nvbit_injection_info, sep=";", index=None, header=None)
 
                 # Execute the fault injection
-                fault_output_file = f"fault_{fault_id}_{fault_location}.txt"
+                unique_id = f"{fault_id}_{fault_location}"
+                fault_output_file = f"fault_{unique_id}.txt"
                 crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1", return_error_code=True)
                 if crash_code:
                     logging.exception(f"Crash code at fault injection {crash_code}")
                     raise
 
-                compact_fault = f"tar czf fault_{fault_id}.tar.gz {fault_output_file} {output_log} {nvbit_injection_info}"
+                compact_fault = f"tar czf fault_{unique_id}.tar.gz "
+                compact_fault += f"{fault_output_file} {output_log} {nvbit_injection_info}"
                 execute_cmd(cmd=compact_fault)
                 execute_cmd(cmd=f"rm {fault_output_file} {output_log} {nvbit_injection_info}")
 
