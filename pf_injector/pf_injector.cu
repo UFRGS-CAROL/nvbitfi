@@ -25,17 +25,25 @@
 #include <iostream>
 #include <csignal>
 #include <unordered_set>
+
+#include "nvbit_tool.h"
 #include "nvbit.h"
+#include "utils/utils.h"
 
 #include "globals.h"
 #include "pf_injector.h"
+
+/**
+ * New functions and variables for FLexGrip Injection
+ */
+#define FATAL(error) throw std::runtime_error(std::string("ERROR ") + __FILE__ + ":" + std::to_string(__LINE__));
 
 int verbose;
 __managed__ int verbose_device;
 int limit = INT_MAX;
 
-// injection parameters input filename: This file is created the the script
-// that launched error injections
+// injection parameters input filename: This file is created the script
+// that launched error injections (MUST BE GLOBAL)
 std::string injInputFilename;
 
 pthread_mutex_t mutex;
@@ -49,6 +57,7 @@ void reset_inj_info() {
     inj_info.injMask = 0;
     inj_info.injNumActivations = 0;
     inj_info.errorInjected = false;
+    inj_info.warpID = 0;
 }
 
 // for debugging 
@@ -81,8 +90,10 @@ void parse_params(const std::string &filename) {
 
         } else {
             printf(" File %s does not exist!", filename.c_str());
-            printf(" This file should contain enough information about the fault site to perform a permanent error injection run: ");
-            printf("(1) SM ID, (2) Lane ID (within a warp), (3) 32-bit mask (as int32), (4) Instruction type (as integer, see maxwell_pascal.h). \n");
+            printf(" This file should contain enough information about the fault site to perform "
+                   "a permanent error injection run: ");
+            printf("(1) SM ID, (2) Lane ID (within a warp), (3) 32-bit mask (as int32), "
+                   "(4) Instruction type (as integer, see maxwell_pascal.h). \n");
             assert(false);
         }
         ifs.close();
@@ -90,6 +101,41 @@ void parse_params(const std::string &filename) {
         if (verbose) {
             print_inj_info();
         }
+    }
+}
+
+// Parse error injection site info from a file. This should be done on host side.
+void parse_flex_grip_file(const std::string &filename) {
+    std::ifstream input_file(filename);
+    std::vector<inj_info_t> permanent_fault_database;
+    if (input_file.good()) {
+        //TODO: Read the file that contains the error model from FlexGrip
+        /**
+         * FILE DESCRIPTION
+         * [instruction];[injSMID];[injLaneID];[injMask];[warpID]
+         */
+        while (!input_file.eof()) {
+            std::string line, word;
+            std::vector<std::string> row;
+            // read an entire row and
+            // store it in a string variable 'line'
+            std::getline(input_file, line);
+
+            // used for breaking words
+            std::stringstream s(line);
+
+            // read every column data of a row and
+            // store it in a string variable, 'word'
+            while (std::getline(s, word, ';')) {
+                // add all the column data
+                // of a row to a vector
+                row.push_back(word);
+            }
+            //add to the vector the faulty values
+            // TODO: Here i'll put a hash map with the instruction and injection site
+        }
+    } else {
+        FATAL("Not possible to open the file " + filename)
     }
 }
 

@@ -25,19 +25,27 @@
 
 extern "C" __device__ __noinline__ void
 inject_error(uint64_t piinfo, uint64_t pverbose_device, int destGPRNum, int regval, int numDestGPRs, int maxRegs) {
-
+    /**
+     * EDIT FOR FLEX GRIP INJECTION
+     * I only need to identify the fault site
+     * "instruction", "LANEID", "warp_id", "SMID"
+     * The good thing is that I can control most of the things from the host side
+     * That is, the instruction and the instrumentation is for each instruction
+     */
     auto inj_info = (inj_info_t *) piinfo;
     uint32_t verbose_device = *((uint32_t *) pverbose_device);
-
-    uint32_t smid;
-    asm("mov.u32 %0, %smid;" :"=r"(smid));
-    if (smid != inj_info->injSMID)
+    auto sm_id = get_smid();
+    if (sm_id != inj_info->injSMID)
         return; // This is not the selected SM. No need to proceed.
 
-    uint32_t laneid;
-    asm("mov.u32 %0, %laneid;" :"=r"(laneid));
-    if (laneid != inj_info->injLaneID)
+    auto lane_id = get_laneid();
+    if (lane_id != inj_info->injLaneID)
         return; // This is not the selected Lane ID. No need to proceed.
+
+    auto warp_id = get_warpid();
+    if (warp_id != inj_info->warpID)
+        return; // This is not the selected Warp ID
+    /**********************************************************************/
 
     assert(numDestGPRs > 0);
     uint32_t injAfterVal = 0;

@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-
 #ifndef PF_INJECTOR_H
 #define PF_INJECTOR_H
 
 //#define MAX_KNAME_SIZE 1000
 
 typedef struct {
-  uint32_t injSMID; // 0 - max SMs
-  uint32_t injLaneID; // 0 - 32
-  uint32_t injMask; // injection mask
-  uint32_t injInstType; // instruction type 
-
-  // updated during/after error injection 
-  uint64_t injNumActivations;
-  bool errorInjected;
-} inj_info_t; 
+    uint32_t injSMID; // 0 - max SMs
+    uint32_t injLaneID; // 0 - 32
+    uint32_t injMask; // injection mask
+    uint32_t injInstType; // instruction type
+    uint32_t warpID;
+    // updated during/after error injection
+    uint64_t injNumActivations;
+    bool errorInjected;
+} inj_info_t;
 
 #endif
