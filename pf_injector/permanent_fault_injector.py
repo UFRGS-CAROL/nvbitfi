@@ -71,7 +71,7 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd):
                     raise
 
                 compact_fault = f"tar czf fault_{unique_id}.tar.gz "
-                radiation_dir = "/var/radiation-benchmarks/*"
+                radiation_dir = "/var/radiation-benchmarks/log/*"
                 compact_fault += f"{fault_output_file} {output_log} {nvbit_injection_info} {radiation_dir}"
                 execute_cmd(cmd=compact_fault)
                 execute_cmd(cmd=f"rm {fault_output_file} {output_log} {nvbit_injection_info} {radiation_dir}")
