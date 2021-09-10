@@ -26,6 +26,9 @@ def read_the_permanent_fault_error_file(input_file):
     df.columns = ["golden_out", "faulty_out", "fault_location", "input1", "input2", "input3",
                   "LANEID", "CTA", "NCTA", "warp_id", "gwarp_id", "SMID", "instruction"]
     df = df[df["faulty_out"] != "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"]
+    # Create the mask
+    df["golden_out"] = df["golden_out"].apply(lambda x: int(x, base=16))
+    df["faulty_out"] = df["faulty_out"].apply(lambda x: int(x, base=16))
     df["instruction"] = df["instruction"].apply(OPCODES.index)
     # ["fault_location", "instruction", "LANEID", "warp_id", "SMID"]
     # print(fault_location_groups)
@@ -46,6 +49,13 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd):
         for name, group in fault_site_df:
             fault_location = group["fault_location"].unique()[0]
             fault_location = re.sub(r"-*=*[ ]*\"*\[*]*[.txt]*", "", fault_location)
+            # new_inj_info.injInstType = std::stoul(row[0]);
+            # new_inj_info.injLaneID = std::stoul(row[1]);
+            # new_inj_info.warpID = std::stoul(row[2]);
+            # new_inj_info.injSMID = std::stoul(row[3]);
+            # auto faulty_out =  std::stoul(row[4]);
+            # auto golden_out =  std::stoul(row[5]);
+
             to_csv_df = group[["instruction", "LANEID", "warp_id", "SMID", "faulty_out", "golden_out"]]
             # IF there is a useful fault to be injected
             if to_csv_df.empty is False:

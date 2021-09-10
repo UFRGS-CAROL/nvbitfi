@@ -48,24 +48,31 @@ std::string injInputFilename;
 
 pthread_mutex_t mutex;
 
-__managed__ inj_info_t inj_info;
+//__managed__ inj_info_t inj_info;
+
+__managed__ inj_info_t *managed_inj_info_array;
+
+/* Set used to avoid re-instrumenting the same functions multiple times */
+std::unordered_set<CUfunction> already_instrumented;
+
 
 void reset_inj_info() {
-    inj_info.injInstType = 0;
-    inj_info.injSMID = 0;
-    inj_info.injLaneID = 0;
-    inj_info.injMask = 0;
-    inj_info.injNumActivations = 0;
-    inj_info.errorInjected = false;
-    inj_info.warpID = 0;
+    managed_inj_info_array[0].injInstType = 0;
+    managed_inj_info_array[0].injSMID = 0;
+    managed_inj_info_array[0].injLaneID = 0;
+    managed_inj_info_array[0].injMask = 0;
+    managed_inj_info_array[0].injNumActivations = 0;
+    managed_inj_info_array[0].errorInjected = false;
+    managed_inj_info_array[0].warpID = 0;
 }
 
 // for debugging 
 void print_inj_info() {
     assert(fout.good());
-    std::cout << "InstType=" << inj_info.injInstType << ", SMID=" << inj_info.injSMID << ", LaneID="
-              << inj_info.injLaneID;
-    std::cout << ", Mask=" << inj_info.injMask << std::endl;
+    std::cout << "InstType=" << managed_inj_info_array[0].injInstType << ", SMID=" << managed_inj_info_array[0].injSMID
+              << ", LaneID="
+              << managed_inj_info_array[0].injLaneID;
+    std::cout << ", Mask=" << managed_inj_info_array[0].injMask << std::endl;
 }
 
 // Parse error injection site info from a file. This should be done on host side.
@@ -77,16 +84,17 @@ void parse_params(const std::string &filename) {
 
         std::ifstream ifs(filename.c_str(), std::ifstream::in);
         if (ifs.is_open()) {
-            ifs >> inj_info.injSMID;
-            assert(inj_info.injSMID < 1000); // we don't have a 1000 SM system yet.
+            ifs >> managed_inj_info_array[0].injSMID;
+            assert(managed_inj_info_array[0].injSMID < 1000); // we don't have a 1000 SM system yet.
 
-            ifs >> inj_info.injLaneID;
-            assert(inj_info.injLaneID < 32); // Warp-size is 32 or less today.
+            ifs >> managed_inj_info_array[0].injLaneID;
+            assert(managed_inj_info_array[0].injLaneID < 32); // Warp-size is 32 or less today.
 
-            ifs >> inj_info.injMask;
+            ifs >> managed_inj_info_array[0].injMask;
 
-            ifs >> inj_info.injInstType; // instruction type
-            assert(inj_info.injInstType <= NUM_ISA_INSTRUCTIONS); // ensure that the value is in the expected range
+            ifs >> managed_inj_info_array[0].injInstType; // instruction type
+            assert(managed_inj_info_array[0].injInstType <=
+                   NUM_ISA_INSTRUCTIONS); // ensure that the value is in the expected range
 
         } else {
             printf(" File %s does not exist!", filename.c_str());
@@ -107,7 +115,7 @@ void parse_params(const std::string &filename) {
 // Parse error injection site info from a file. This should be done on host side.
 void parse_flex_grip_file(const std::string &filename) {
     std::ifstream input_file(filename);
-    std::vector<inj_info_t> permanent_fault_database;
+    std::vector<inj_info_t> host_database_inj_info;
     if (input_file.good()) {
         //TODO: Read the file that contains the error model from FlexGrip
         /**
@@ -132,8 +140,21 @@ void parse_flex_grip_file(const std::string &filename) {
                 row.push_back(word);
             }
             //add to the vector the faulty values
-            // TODO: Here i'll put a hash map with the instruction and injection site
+            inj_info_t new_inj_info;
+            new_inj_info.injInstType = std::stoul(row[0]);
+            new_inj_info.injLaneID = std::stoul(row[1]);
+            new_inj_info.warpID = std::stoul(row[2]);
+            new_inj_info.injSMID = std::stoul(row[3]);
+            auto faulty_out = std::stoul(row[4]);
+            auto golden_out = std::stoul(row[5]);
+            new_inj_info.injMask = faulty_out ^ golden_out;
+            host_database_inj_info.push_back(new_inj_info);
         }
+        // COPY to gpu the array of injections
+        CUDA_SAFECALL(cudaMallocManaged(&managed_inj_info_array,
+                                        host_database_inj_info.size() * sizeof(inj_info_t)));
+        std::copy(host_database_inj_info.begin(), host_database_inj_info.end(), managed_inj_info_array);
+        CUDA_SAFECALL(cudaDeviceSynchronize());
     } else {
         FATAL("Not possible to open the file " + filename)
     }
@@ -159,7 +180,7 @@ void INThandler(int sig) {
     signal(sig, SIG_IGN); // disable Ctrl-C
 
     fout << ":::NVBit-inject-error; ERROR FAIL Detected Singal SIGKILL;";
-    fout << " injNumActivations: " << inj_info.injNumActivations << ":::";
+    fout << " injNumActivations: " << managed_inj_info_array[0].injNumActivations << ":::";
     fout.flush();
     exit(-1);
 }
@@ -202,13 +223,10 @@ void nvbit_at_init() {
     if (verbose) printf("nvbit_at_init:end\n");
 }
 
-/* Set used to avoid re-instrumenting the same functions multiple times */
-std::unordered_set<CUfunction> already_instrumented;
-
-
 void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 
-    parse_params(injInputFilename);  // injParams are updated based on injection seed file
+//    parse_params(injInputFilename);  // injParams are updated based on injection seed file
+    parse_flex_grip_file(injInputFilename);
     update_verbose();
 
     /* Get related functions of the kernel (device function that can be
@@ -240,7 +258,12 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
             int instType = instTypeNameMap[instTypeStr];
             if (verbose) printf("extracted instType: %s, ", instTypeStr.c_str());
             if (verbose) printf("index of instType: %d\n", instTypeNameMap[instTypeStr]);
-            if ((uint32_t) instType == inj_info.injInstType || inj_info.injInstType == NUM_ISA_INSTRUCTIONS) {
+
+            /**
+             * MODIFICATION FOR FLEXGRIP PF injection
+             */
+            if ((uint32_t) instType == managed_inj_info_array[0].injInstType ||
+                managed_inj_info_array[0].injInstType == NUM_ISA_INSTRUCTIONS) {
                 if (verbose) {
                     printf("instruction selected for instrumentation: ");
                     i->print();
@@ -278,7 +301,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                         }
 
                         nvbit_insert_call(i, "inject_error", IPOINT_AFTER);
-                        nvbit_add_call_arg_const_val64(i, (uint64_t) &inj_info);
+                        nvbit_add_call_arg_const_val64(i, (uint64_t) &managed_inj_info_array[0]);
                         nvbit_add_call_arg_const_val64(i, (uint64_t) &verbose_device);
 
                         nvbit_add_call_arg_const_val32(i, destGPRNum); // destination GPR register number
@@ -290,7 +313,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                         nvbit_add_call_arg_const_val32(i, numDestGPRs); // number of destination GPR registers
 
                         nvbit_add_call_arg_const_val32(i, maxregs); // max regs used by the inst info
-
+                        /**********************************************************************************************/
                     }
                     // If an instruction has two destination registers, not handled!! (TODO: Fix later)
                 }
@@ -349,11 +372,11 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
                 fout << "index: " << kernel_id << ";";
                 fout << "kernel_name: " << kname << ";";
                 fout << "ctas: " << num_ctas << ";";
-                fout << "selected SM: " << inj_info.injSMID << ";";
-                fout << "selected Lane: " << inj_info.injLaneID << ";";
-                fout << "selected Mask: " << inj_info.injMask << ";";
-                fout << "selected InstType: " << inj_info.injInstType << ";";
-                fout << "injNumActivations: " << inj_info.injNumActivations << std::endl;
+                fout << "selected SM: " << managed_inj_info_array[0].injSMID << ";";
+                fout << "selected Lane: " << managed_inj_info_array[0].injLaneID << ";";
+                fout << "selected Mask: " << managed_inj_info_array[0].injMask << ";";
+                fout << "selected InstType: " << managed_inj_info_array[0].injInstType << ";";
+                fout << "injNumActivations: " << managed_inj_info_array[0].injNumActivations << std::endl;
 
                 if (cudaSuccess != le) {
                     assert(fout.good());

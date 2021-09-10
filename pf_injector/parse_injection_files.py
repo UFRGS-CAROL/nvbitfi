@@ -2,9 +2,7 @@
 
 import glob
 import logging
-
 import pandas as pd
-
 from commom import execute_cmd, OPCODES
 
 
