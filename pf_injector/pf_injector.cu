@@ -122,7 +122,7 @@ void parse_flex_grip_file(const std::string &filename) {
          * FILE DESCRIPTION
          * [instruction];[injSMID];[injLaneID];[injMask];[warpID]
          */
-        while (!input_file.eof()) {
+        do {
             std::string line, word;
             std::vector<std::string> row;
             // read an entire row and
@@ -149,7 +149,7 @@ void parse_flex_grip_file(const std::string &filename) {
             auto golden_out = std::stoul(row[5]);
             new_inj_info.injMask = faulty_out ^ golden_out;
             host_database_inj_info.push_back(new_inj_info);
-        }
+        } while (!input_file.eof());
         // COPY to gpu the array of injections
         CUDA_SAFECALL(cudaMallocManaged(&managed_inj_info_array,
                                         host_database_inj_info.size() * sizeof(inj_info_t)));
