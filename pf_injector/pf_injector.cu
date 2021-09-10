@@ -128,7 +128,7 @@ void parse_flex_grip_file(const std::string &filename) {
             // read an entire row and
             // store it in a string variable 'line'
             std::getline(input_file, line);
-            if(!input_file.eof()){
+            if(input_file.eof()){
                 break;
             }
             // used for breaking words
