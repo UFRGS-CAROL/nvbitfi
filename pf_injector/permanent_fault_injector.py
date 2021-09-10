@@ -46,9 +46,9 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd):
     for fault_id, fault_location in enumerate(fault_location_groups):
         fault_site_df = error_df[error_df["fault_location"] == fault_location]
         fault_site_df = fault_site_df.groupby(["fault_location", "instruction", "LANEID", "warp_id", "SMID"])
+        pf_loc = re.sub(r"-*=*[ ]*\"*\[*]*[.txt]*", "", fault_location)
+
         for name, group in fault_site_df:
-            fault_location = group["fault_location"].unique()[0]
-            fault_location = re.sub(r"-*=*[ ]*\"*\[*]*[.txt]*", "", fault_location)
             # new_inj_info.injInstType = std::stoul(row[0]);
             # new_inj_info.injLaneID = std::stoul(row[1]);
             # new_inj_info.warpID = std::stoul(row[2]);
@@ -59,10 +59,12 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd):
             to_csv_df = group[["instruction", "LANEID", "warp_id", "SMID", "faulty_out", "golden_out"]]
             # IF there is a useful fault to be injected
             if to_csv_df.empty is False:
+                thread_id = '_'.join(map(str, name[1:]))
+                unique_id = f"{fault_id}_{pf_loc}_{thread_id}"
+                print(unique_id)
+                # Save the nvbit input file
                 to_csv_df.to_csv(nvbit_injection_info, sep=";", index=None, header=None)
-
                 # Execute the fault injection
-                unique_id = f"{fault_id}_{fault_location}"
                 fault_output_file = f"fault_{unique_id}.txt"
                 crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1", return_error_code=True)
                 if crash_code:
@@ -70,9 +72,10 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd):
                     raise
 
                 compact_fault = f"tar czf fault_{unique_id}.tar.gz "
-                compact_fault += f"{fault_output_file} {output_log} {nvbit_injection_info}"
+                radiation_dir = "/var/radiation-benchmarks/*"
+                compact_fault += f"{fault_output_file} {output_log} {nvbit_injection_info} {radiation_dir}"
                 execute_cmd(cmd=compact_fault)
-                execute_cmd(cmd=f"rm {fault_output_file} {output_log} {nvbit_injection_info}")
+                execute_cmd(cmd=f"rm {fault_output_file} {output_log} {nvbit_injection_info} {radiation_dir}")
 
 
 def main():
