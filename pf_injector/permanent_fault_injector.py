@@ -61,7 +61,6 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd):
             if to_csv_df.empty is False:
                 thread_id = '_'.join(map(str, name[1:]))
                 unique_id = f"{fault_id}_{pf_loc}_{thread_id}"
-                print(unique_id)
                 # Save the nvbit input file
                 to_csv_df.to_csv(nvbit_injection_info, sep=";", index=None, header=None)
                 # Execute the fault injection
