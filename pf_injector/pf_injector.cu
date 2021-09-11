@@ -70,8 +70,8 @@ void reset_inj_info() {
 void print_inj_info() {
     assert(fout.good());
     std::cout << "InstType=" << managed_inj_info_array[0].injInstType << ", SMID=" << managed_inj_info_array[0].injSMID
-              << ", LaneID="
-              << managed_inj_info_array[0].injLaneID;
+              << ", LaneID=" << managed_inj_info_array[0].injLaneID
+            << ", WarpID=" << managed_inj_info_array[0].warpID;
     std::cout << ", Mask=" << managed_inj_info_array[0].injMask << std::endl;
 }
 
@@ -117,18 +117,14 @@ void parse_flex_grip_file(const std::string &filename) {
     std::ifstream input_file(filename);
     std::vector<inj_info_t> host_database_inj_info;
     if (input_file.good()) {
-        //TODO: Read the file that contains the error model from FlexGrip
-        /**
-         * FILE DESCRIPTION
-         * [instruction];[injSMID];[injLaneID];[injMask];[warpID]
-         */
+        // Read the file that contains the error model from FlexGrip
         while (!input_file.eof()) {
             std::string line, word;
             std::vector<std::string> row;
             // read an entire row and
             // store it in a string variable 'line'
             std::getline(input_file, line);
-            if(input_file.eof()){
+            if (input_file.eof()) {
                 break;
             }
             // used for breaking words
@@ -376,6 +372,7 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
                 fout << "ctas: " << num_ctas << ";";
                 fout << "selected SM: " << managed_inj_info_array[0].injSMID << ";";
                 fout << "selected Lane: " << managed_inj_info_array[0].injLaneID << ";";
+                fout << "selected Warp: " << managed_inj_info_array[0].warpID << ";";
                 fout << "selected Mask: " << managed_inj_info_array[0].injMask << ";";
                 fout << "selected InstType: " << managed_inj_info_array[0].injInstType << ";";
                 fout << "injNumActivations: " << managed_inj_info_array[0].injNumActivations << std::endl;

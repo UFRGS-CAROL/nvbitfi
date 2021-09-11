@@ -55,10 +55,10 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd):
             # new_inj_info.injSMID = std::stoul(row[3]);
             # auto faulty_out =  std::stoul(row[4]);
             # auto golden_out =  std::stoul(row[5]);
-
             to_csv_df = group[["instruction", "LANEID", "warp_id", "SMID", "faulty_out", "golden_out"]]
             # IF there is a useful fault to be injected
             if to_csv_df.empty is False:
+                print(to_csv_df)
                 thread_id = '_'.join(map(str, name[1:]))
                 unique_id = f"{fault_id}_{pf_loc}_{thread_id}"
                 # Save the nvbit input file
