@@ -14,8 +14,7 @@ def untar_and_process_files():
     execute_cmd(f"mkdir -p {output_folder}")
     final_list = list()
     for file in tar_files:
-        untar_cmd = f"tar xzf {file} -C {output_folder}"
-        execute_cmd(untar_cmd)
+        execute_cmd(f"tar xzf {file} -C {output_folder}")
         tar_pattern = r"fault_(\d+)_(\S+)_(\d+)_(\d+)_(\d+)_(\d+).tar.gz"
         m_fault = re.match(tar_pattern, file)
         # fault_19_sa1_op0_in20_4_27_6_0.tar.gz
@@ -27,11 +26,11 @@ def untar_and_process_files():
                 sdc = "SDC" in line or sdc
                 end = "END" in line or end
 
-            final_list.append({"sm_id": int(sm_id.strip()), "lane_id": int(lane_id.strip()),
+            final_list.append({"fault_id": fault_id, "fault_location": fault_location, "sm_id": int(sm_id.strip()),
+                               "lane_id": int(lane_id.strip()), "warp_id": int(warp_id.strip()),
                                "opcode": OPCODES[int(opcode)], "SDC": int(sdc), "DUE": int(end == 0)})
 
-        rm_out = f"rm -rf {output_folder}/*"
-        execute_cmd(rm_out)
+        execute_cmd(f"rm -rf {output_folder}/*")
 
     return pd.DataFrame(final_list)
 
