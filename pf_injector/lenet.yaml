@@ -1,5 +1,5 @@
 # App name
-appname: simple_add
+appname: lenet
 
 # Put in app_command the binary file and the parameters to execute
 appcommand: /home/fernando/git_research/nvbitfi/test-apps/simple_add/simple_add

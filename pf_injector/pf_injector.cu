@@ -50,7 +50,7 @@ pthread_mutex_t mutex;
 
 //__managed__ inj_info_t inj_info;
 
-__managed__ inj_info_t *managed_inj_info_array;
+__managed__ inj_info_t *managed_inj_info_array = nullptr;
 
 /* Set used to avoid re-instrumenting the same functions multiple times */
 std::unordered_set<CUfunction> already_instrumented;
@@ -71,7 +71,7 @@ void print_inj_info() {
     assert(fout.good());
     std::cout << "InstType=" << managed_inj_info_array[0].injInstType << ", SMID=" << managed_inj_info_array[0].injSMID
               << ", LaneID=" << managed_inj_info_array[0].injLaneID
-            << ", WarpID=" << managed_inj_info_array[0].warpID;
+              << ", WarpID=" << managed_inj_info_array[0].warpID;
     std::cout << ", Mask=" << managed_inj_info_array[0].injMask << std::endl;
 }
 
@@ -393,4 +393,12 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
     }
 }
 
-void nvbit_at_term() {} // nothing to do here.
+/**
+ * Executes after everything
+ * cudaFree the managed_inj_info_array
+ */
+void nvbit_at_term() {
+    if (managed_inj_info_array != nullptr) {
+        CUDA_SAFECALL(cudaFree(managed_inj_info_array));
+    }
+}

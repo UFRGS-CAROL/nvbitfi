@@ -1,13 +1,12 @@
 #!/usr/bin/python3.8
 import argparse
 import datetime
+import glob
 import re
-
 import time
 import logging
 import pandas as pd
 import yaml
-
 from commom import execute_cmd, OPCODES
 
 
@@ -30,51 +29,46 @@ def read_the_permanent_fault_error_file(input_file):
     df["golden_out"] = df["golden_out"].apply(lambda x: int(x, base=16))
     df["faulty_out"] = df["faulty_out"].apply(lambda x: int(x, base=16))
     df["instruction"] = df["instruction"].apply(OPCODES.index)
-    # ["fault_location", "instruction", "LANEID", "warp_id", "SMID"]
-    # print(fault_location_groups)
-    # print(df)
     return df
 
 
-def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd):
-    fault_location_groups = error_df["fault_location"].unique()
+def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd, app_name):
     logging.info(f"Staring the fault injection for {error_df.shape[0]} faults")
-    output_log = "nvbitfi-injection-log-temp.txt"
     nvbit_injection_info = "nvbitfi-injection-info.txt"
+    output_logs = [nvbit_injection_info, "nvbitfi-injection-log-temp.txt"]
     execute_fi = f"eval LD_PRELOAD={path_to_nvbitfi}/pf_injector/pf_injector.so {app_cmd}"
+    logs_foler = f"logs/{app_name}"
+    execute_cmd(f"mkdir -p {logs_foler}")
+    execute_cmd(f"rm {logs_foler}/* /var/radiation-benchmarks/log/*.log")
 
-    for fault_id, fault_location in enumerate(fault_location_groups):
-        fault_site_df = error_df[error_df["fault_location"] == fault_location]
-        fault_site_df = fault_site_df.groupby(["fault_location", "instruction", "LANEID", "warp_id", "SMID"])
-        pf_loc = re.sub(r"-*=*[ ]*\"*\[*]*[.txt]*", "", fault_location)
+    fault_site_df = error_df.groupby(["instruction", "LANEID", "warp_id", "SMID"])
+    for fault_id, (name, group) in enumerate(fault_site_df):
+        # new_inj_info.injInstType,injLaneID,warpID,injSMID,faulty_out,golden_out
+        to_csv_df = group[["instruction", "LANEID", "warp_id", "SMID", "faulty_out", "golden_out"]]
+        # IF there is a useful fault to be injected
+        if to_csv_df.empty is False:
+            # fault_location = group["fault_location"].unique()
+            # assert len(fault_location) == 1, "More than 1 fault location"
+            # pf_loc = re.sub(r"-*=*[ ]*\"*\[*]*[.txt]*", "", fault_location[0])
+            thread_id = '_'.join(map(str, name[1:]))
+            # unique_id = f"{fault_id}_{pf_loc}_{thread_id}"
+            unique_id = f"{fault_id}_{thread_id}"
+            # Save the nvbit input file
+            to_csv_df.to_csv(nvbit_injection_info, sep=";", index=None, header=None)
+            # Execute the fault injection
+            fault_output_file = f"fault_{unique_id}.txt"
+            crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1", return_error_code=True)
+            if crash_code:
+                logging.exception(f"Crash code at fault injection {crash_code}")
+                raise
 
-        for name, group in fault_site_df:
-            # new_inj_info.injInstType = std::stoul(row[0]);
-            # new_inj_info.injLaneID = std::stoul(row[1]);
-            # new_inj_info.warpID = std::stoul(row[2]);
-            # new_inj_info.injSMID = std::stoul(row[3]);
-            # auto faulty_out =  std::stoul(row[4]);
-            # auto golden_out =  std::stoul(row[5]);
-            to_csv_df = group[["instruction", "LANEID", "warp_id", "SMID", "faulty_out", "golden_out"]]
-            # IF there is a useful fault to be injected
-            if to_csv_df.empty is False:
-                print(to_csv_df)
-                thread_id = '_'.join(map(str, name[1:]))
-                unique_id = f"{fault_id}_{pf_loc}_{thread_id}"
-                # Save the nvbit input file
-                to_csv_df.to_csv(nvbit_injection_info, sep=";", index=None, header=None)
-                # Execute the fault injection
-                fault_output_file = f"fault_{unique_id}.txt"
-                crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1", return_error_code=True)
-                if crash_code:
-                    logging.exception(f"Crash code at fault injection {crash_code}")
-                    raise
-
-                compact_fault = f"tar czf fault_{unique_id}.tar.gz "
-                radiation_dir = "/var/radiation-benchmarks/log/*"
-                compact_fault += f"{fault_output_file} {output_log} {nvbit_injection_info} {radiation_dir}"
-                execute_cmd(cmd=compact_fault)
-                execute_cmd(cmd=f"rm {fault_output_file} {output_log} {nvbit_injection_info} {radiation_dir}")
+            # rename these files
+            # nvbitfi-injection-info.txt  nvbitfi-injection-log-temp.txt
+            rad_log = glob.glob("/var/radiation-benchmarks/log/*.log")[0]
+            tmp_logs_names = output_logs + [rad_log]
+            for mv_file in tmp_logs_names:
+                new_name = unique_id + "_" + mv_file
+                execute_cmd(f"{mv_file} {logs_foler}/{new_name}")
 
 
 def main():
@@ -97,6 +91,7 @@ def main():
 
     nvbitfi_path = parameters["nvbitfipath"]
     app_command = parameters["appcommand"]
+    app_name = parameters["appname"]
     time_reading_error_file = time.time()
     error_df = read_the_permanent_fault_error_file(input_file=error_input_file)
     time_reading_error_file = time.time() - time_reading_error_file
@@ -104,7 +99,7 @@ def main():
 
     # Inject the faults
     time_fault_injection = time.time()
-    inject_permanent_faults(error_df=error_df, path_to_nvbitfi=nvbitfi_path, app_cmd=app_command)
+    inject_permanent_faults(error_df=error_df, path_to_nvbitfi=nvbitfi_path, app_cmd=app_command, app_name=app_name)
     time_fault_injection = time.time() - time_fault_injection
     logging.debug(f"Time spent on the fault injection {datetime.timedelta(seconds=time_fault_injection)}")
 

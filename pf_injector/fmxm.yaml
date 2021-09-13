@@ -1,0 +1,14 @@
+# App name
+appname: FMXM
+
+# Put in app_command the binary file and the parameters to execute
+appcommand: >
+  /home/fernando/radiation-benchmarks/src/cuda/gemm/gemm --size 32 --verbose --opnum 1
+  --precision float --dmr none --iterations 1  --alpha 1.0 --beta 0.0
+  --input_a /home/fernando/radiation-benchmarks/data/gemm/a_float_1.0_0.0_32_cublas_0_tensor_0.matrix
+  --input_b /home/fernando/radiation-benchmarks/data/gemm/b_float_1.0_0.0_32_cublas_0_tensor_0.matrix
+  --input_c /home/fernando/radiation-benchmarks/data/gemm/c_float_1.0_0.0_32_cublas_0_tensor_0.matrix
+  --gold  /home/fernando/radiation-benchmarks/data/gemm/g_float_1.0_0.0_32_cublas_0_tensor_0.matrix
+
+# Path to the NVBITFI fault injector
+nvbitfipath: /home/carol/NVBITFI/nvbit_release/tools/nvbitfi
