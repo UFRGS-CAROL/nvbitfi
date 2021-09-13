@@ -21,6 +21,9 @@ def untar_and_process_files():
         if m_fault:
             fault_id, fault_location, instruction, lane_id, warp_id, sm_id = m_fault.groups()
             print(fault_id, fault_location, instruction, lane_id, warp_id, sm_id)
+        else:
+            print(file)
+            exit()
         # final_list.append({
         #     "sm_id": int(sm_id.strip()), "lane_id": int(lane_id.strip()), "mask": bin(int(mask.strip())),
         #     "opcode": OPCODES[int(opcode)], "SDC": sdc, "DUE": due
