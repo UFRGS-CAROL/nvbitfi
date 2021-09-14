@@ -81,11 +81,12 @@ def main():
                         datefmt='%m/%d/%Y %H:%M:%S')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--errorfile", help="Input file that contains the error input for each operand", required=True)
+    # parser.add_argument("--errorfile",
+    # help="Input file that contains the error input for each operand", required=True)
     parser.add_argument("--appcfg", default="./example.yaml",
                         help="A YAML configuration file that contains the app directory and execute cmd. See example")
     args = parser.parse_args()
-    error_input_file = args.errorfile
+    # error_input_file = args.errorfile
     with open(args.appcfg, 'r') as fp:
         parameters = yaml.load(fp, Loader=yaml.SafeLoader)
 
@@ -93,7 +94,18 @@ def main():
     app_command = parameters["appcommand"]
     app_name = parameters["appname"]
     time_reading_error_file = time.time()
-    error_df = read_the_permanent_fault_error_file(input_file=error_input_file)
+    ####################################################################################################################
+    # TODO: QUICK FIX FOR Lenet
+    selected_fault_location = "sa1_DUT_i_fpu_mul_mantissa_b_reg[0]_Q.txt"
+    all_txts = glob.glob("/home/fernando/temp/matteo_project/lenet_results/*/*.txt", recursive=True)
+    final_list = list()
+    for esteban_txt in all_txts:
+        txt_df = read_the_permanent_fault_error_file(input_file=esteban_txt)
+        final_list.append(txt_df)
+    error_df = pd.concat(final_list)
+    error_df = error_df[error_df["fault_location"] == selected_fault_location]
+    ####################################################################################################################
+
     time_reading_error_file = time.time() - time_reading_error_file
     logging.debug(f"Time spent on reading the error file {datetime.timedelta(seconds=time_reading_error_file)}")
 

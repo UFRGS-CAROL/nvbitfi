@@ -2,7 +2,13 @@
 appname: lenet
 
 # Put in app_command the binary file and the parameters to execute
-appcommand: /home/fernando/git_research/nvbitfi/test-apps/simple_add/simple_add
+appcommand: >
+  /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/darknet classifier predict
+  /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/cfg/mnist.dataset
+  /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/cfg/mnist_lenet.cfg
+  /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/data/mnist_lenet.weights
+  /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/data/mnist/images/v_00000_c7.png -t 10
+
 
 # Path to the NVBITFI fault injector
-nvbitfipath: /home/fernando/git_research/nvbitfi
+nvbitfipath: /home/carol/git_research/nvbitfi
