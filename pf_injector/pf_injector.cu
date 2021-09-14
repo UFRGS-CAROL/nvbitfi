@@ -50,7 +50,7 @@ pthread_mutex_t mutex;
 
 //__managed__ inj_info_t inj_info;
 
-__managed__ inj_info_t *managed_inj_info_array = nullptr;
+__managed__ inj_info_t managed_inj_info_array[1];
 
 /* Set used to avoid re-instrumenting the same functions multiple times */
 std::unordered_set<CUfunction> already_instrumented;
@@ -149,9 +149,10 @@ void parse_flex_grip_file(const std::string &filename) {
             host_database_inj_info.push_back(new_inj_info);
         }
         // COPY to gpu the array of injections
-        CUDA_SAFECALL(cudaMallocManaged(&managed_inj_info_array,
-                                        host_database_inj_info.size() * sizeof(inj_info_t)));
-        std::copy(host_database_inj_info.begin(), host_database_inj_info.end(), managed_inj_info_array);
+//        CUDA_SAFECALL(cudaMallocManaged(&managed_inj_info_array,
+//                                        host_database_inj_info.size() * sizeof(inj_info_t)));
+//        std::copy(host_database_inj_info.begin(), host_database_inj_info.end(), managed_inj_info_array);
+        managed_inj_info_array[0] = host_database_inj_info[0];
         CUDA_SAFECALL(cudaDeviceSynchronize());
     } else {
         FATAL("Not possible to open the file " + filename)
@@ -393,12 +394,4 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
     }
 }
 
-/**
- * Executes after everything
- * cudaFree the managed_inj_info_array
- */
-void nvbit_at_term() {
-    if (managed_inj_info_array != nullptr) {
-        CUDA_SAFECALL(cudaFree(managed_inj_info_array));
-    }
-}
+void nvbit_at_term() {} //nothing to do here
