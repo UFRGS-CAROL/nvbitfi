@@ -3,11 +3,11 @@ appname: lenet
 
 # Put in app_command the binary file and the parameters to execute
 appcommand: >
-  /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/darknet classifier predict
-  /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/cfg/mnist.dataset
-  /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/cfg/mnist_lenet.cfg
-  /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/data/mnist_lenet.weights
-  /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/data/mnist/images/v_00000_c7.png -t 10
+  /home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/test-apps/darknet_lenet/darknet classifier predict
+  /home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/test-apps/darknet_lenet/cfg/mnist.data
+  /home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/test-apps/darknet_lenet/cfg/mnist_lenet.cfg
+  /home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/test-apps/darknet_lenet/backup/mnist_lenet.weights
+  /home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/test-apps/darknet_lenet/data/mnist_images/test/44366_One.png -t 10
 
 # Path to the NVBITFI fault injector
 nvbitfipath: /home/carol/git_research/nvbitfi
