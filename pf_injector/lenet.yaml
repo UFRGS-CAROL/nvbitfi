@@ -10,4 +10,4 @@ appcommand: >
   /home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/test-apps/darknet_lenet/data/mnist_images/test/44366_One.png -t 10
 
 # Path to the NVBITFI fault injector
-nvbitfipath: /home/carol/git_research/nvbitfi
+nvbitfipath:  /home/fernando/NVBITFI/nvbit_release/tools/nvbitfi
