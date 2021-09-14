@@ -9,6 +9,5 @@ appcommand: >
   /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/data/mnist_lenet.weights
   /home/carol/git_research/nvbitfi/test-apps/darknet_lenet/data/mnist/images/v_00000_c7.png -t 10
 
-
 # Path to the NVBITFI fault injector
 nvbitfipath: /home/carol/git_research/nvbitfi
