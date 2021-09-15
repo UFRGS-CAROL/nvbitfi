@@ -50,50 +50,50 @@ pthread_mutex_t mutex;
 
 //__managed__ inj_info_t inj_info;
 
-__managed__ inj_info_t managed_inj_info_array[1];
+__managed__ inj_info_t *managed_inj_info_array = nullptr;
 
 /* Set used to avoid re-instrumenting the same functions multiple times */
 std::unordered_set<CUfunction> already_instrumented;
 
 
-void reset_inj_info() {
-    managed_inj_info_array[0].injInstType = 0;
-    managed_inj_info_array[0].injSMID = 0;
-    managed_inj_info_array[0].injLaneID = 0;
-    managed_inj_info_array[0].injMask = 0;
-    managed_inj_info_array[0].injNumActivations = 0;
-    managed_inj_info_array[0].errorInjected = false;
-    managed_inj_info_array[0].warpID = 0;
+void reset_inj_info(int i = 0) {
+    managed_inj_info_array[i].injInstType = 0;
+    managed_inj_info_array[i].injSMID = 0;
+    managed_inj_info_array[i].injLaneID = 0;
+    managed_inj_info_array[i].injMask = 0;
+    managed_inj_info_array[i].injNumActivations = 0;
+    managed_inj_info_array[i].errorInjected = false;
+    managed_inj_info_array[i].warpID = 0;
 }
 
 // for debugging 
-void print_inj_info() {
+void print_inj_info(int i = 0) {
     assert(fout.good());
-    std::cout << "InstType=" << managed_inj_info_array[0].injInstType << ", SMID=" << managed_inj_info_array[0].injSMID
-              << ", LaneID=" << managed_inj_info_array[0].injLaneID
-              << ", WarpID=" << managed_inj_info_array[0].warpID;
-    std::cout << ", Mask=" << managed_inj_info_array[0].injMask << std::endl;
+    std::cout << "InstType=" << managed_inj_info_array[i].injInstType << ", SMID=" << managed_inj_info_array[i].injSMID
+              << ", LaneID=" << managed_inj_info_array[i].injLaneID
+              << ", WarpID=" << managed_inj_info_array[i].warpID;
+    std::cout << ", Mask=" << managed_inj_info_array[i].injMask << std::endl;
 }
 
 // Parse error injection site info from a file. This should be done on host side.
-void parse_params(const std::string &filename) {
+void parse_params(const std::string &filename, int i = 0) {
     static bool parse_flag = false; // file will be parsed only once - performance enhancement
     if (!parse_flag) {
         parse_flag = true;
         reset_inj_info();
 
-        std::ifstream ifs(filename.c_str(), std::ifstream::in);
+        std::ifstream ifs(filename, std::ifstream::in);
         if (ifs.is_open()) {
-            ifs >> managed_inj_info_array[0].injSMID;
-            assert(managed_inj_info_array[0].injSMID < 1000); // we don't have a 1000 SM system yet.
+            ifs >> managed_inj_info_array[i].injSMID;
+            assert(managed_inj_info_array[i].injSMID < 1000); // we don't have a 1000 SM system yet.
 
-            ifs >> managed_inj_info_array[0].injLaneID;
-            assert(managed_inj_info_array[0].injLaneID < 32); // Warp-size is 32 or less today.
+            ifs >> managed_inj_info_array[i].injLaneID;
+            assert(managed_inj_info_array[i].injLaneID < 32); // Warp-size is 32 or less today.
 
-            ifs >> managed_inj_info_array[0].injMask;
+            ifs >> managed_inj_info_array[i].injMask;
 
-            ifs >> managed_inj_info_array[0].injInstType; // instruction type
-            assert(managed_inj_info_array[0].injInstType <=
+            ifs >> managed_inj_info_array[i].injInstType; // instruction type
+            assert(managed_inj_info_array[i].injInstType <=
                    NUM_ISA_INSTRUCTIONS); // ensure that the value is in the expected range
 
         } else {
@@ -149,10 +149,9 @@ void parse_flex_grip_file(const std::string &filename) {
             host_database_inj_info.push_back(new_inj_info);
         }
         // COPY to gpu the array of injections
-//        CUDA_SAFECALL(cudaMallocManaged(&managed_inj_info_array,
-//                                        host_database_inj_info.size() * sizeof(inj_info_t)));
-//        std::copy(host_database_inj_info.begin(), host_database_inj_info.end(), managed_inj_info_array);
-        managed_inj_info_array[0] = host_database_inj_info[0];
+        CUDA_SAFECALL(cudaMallocManaged(&managed_inj_info_array,
+                                        host_database_inj_info.size() * sizeof(inj_info_t)));
+        std::copy(host_database_inj_info.begin(), host_database_inj_info.end(), managed_inj_info_array);
         CUDA_SAFECALL(cudaDeviceSynchronize());
     } else {
         FATAL("Not possible to open the file " + filename)

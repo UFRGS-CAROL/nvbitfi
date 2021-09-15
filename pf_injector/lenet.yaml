@@ -10,4 +10,7 @@ appcommand: >
   /home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/test-apps/darknet_lenet/data/mnist_images/test/44366_One.png -t 10
 
 # Path to the NVBITFI fault injector
-nvbitfipath:  /home/fernando/NVBITFI/nvbit_release/tools/nvbitfi
+nvbitfipath: /home/fernando/NVBITFI/nvbit_release/tools/nvbitfi
+
+# Path to the csv database from flexgrip
+csvdatabase: "/home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/pf_injector/flexgrip_files/lenet/lenet_flexgrip_database.csv"
