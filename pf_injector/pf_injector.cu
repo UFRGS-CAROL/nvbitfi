@@ -52,6 +52,10 @@ pthread_mutex_t mutex;
 
 __managed__ inj_info_t *managed_inj_info_array = nullptr;
 
+// To inject for each kernel
+using kernel_tuple = std::tuple<std::string, uint32_t>;
+std::vector<kernel_tuple> kernel_vector;
+
 /* Set used to avoid re-instrumenting the same functions multiple times */
 std::unordered_set<CUfunction> already_instrumented;
 
@@ -138,15 +142,21 @@ void parse_flex_grip_file(const std::string &filename) {
                 row.push_back(word);
             }
             //add to the vector the faulty values
-            inj_info_t new_inj_info;
-            new_inj_info.injInstType = std::stoul(row[0]);
-            new_inj_info.injLaneID = std::stoul(row[1]);
-            new_inj_info.warpID = std::stoul(row[2]);
-            new_inj_info.injSMID = std::stoul(row[3]);
-            auto faulty_out = std::stoul(row[4]);
-            auto golden_out = std::stoul(row[5]);
-            new_inj_info.injMask = faulty_out ^ golden_out;
-            host_database_inj_info.push_back(new_inj_info);
+            //kernel_name;counter
+            if (row.size() == 2) {
+                kernel_tuple t(row[0], std::stoul(row[1]));
+                kernel_vector.push_back(t);
+            } else {
+                inj_info_t new_inj_info;
+                new_inj_info.injInstType = std::stoul(row[0]);
+                new_inj_info.injLaneID = std::stoul(row[1]);
+                new_inj_info.warpID = std::stoul(row[2]);
+                new_inj_info.injSMID = std::stoul(row[3]);
+                new_inj_info.injMask = std::stoul(row[4]);
+                new_inj_info.instructionIndex = std::stoul(row[5]);
+                host_database_inj_info.push_back(new_inj_info);
+            }
+
         }
         // COPY to gpu the array of injections
         CUDA_SAFECALL(cudaMallocManaged(&managed_inj_info_array,
