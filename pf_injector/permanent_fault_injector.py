@@ -45,7 +45,6 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd, app_name):
             for mv_file in tmp_logs_names:
                 new_name = unique_id + "_" + mv_file
                 execute_cmd(f"mv {mv_file} {logs_foler}/{new_name}")
-            if fault_id > 10: break
 
 
 def main():
