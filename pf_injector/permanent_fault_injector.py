@@ -15,6 +15,9 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd, app_name):
     output_logs = [nvbit_injection_info, "nvbitfi-injection-log-temp.txt"]
     execute_fi = f"eval LD_PRELOAD={path_to_nvbitfi}/pf_injector/pf_injector.so {app_cmd}"
     logs_foler = f"logs/{app_name}"
+    # Clean before start
+    execute_cmd(" ".join(["rm -f", f"{logs_foler}/*"] + output_logs))
+
     execute_cmd(f"mkdir -p {logs_foler}")
     error_df["opcode_id"] = error_df["instruction"].apply(OPCODES.index)
     fault_site_df = error_df.groupby(["fault_location", "instruction", "LANEID", "SMID"])
