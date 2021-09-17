@@ -269,6 +269,10 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
         std::string kname = removeSpaces(nvbit_get_func_name(ctx, f));
         // Find flexgrip counter
         auto flex_grip_event_counter = find_if_kernel_is_in_pf_database(kname);
+        // if it is not the kernel continue
+        if(flex_grip_event_counter == 0){
+            continue;
+        }
         /* Get the vector of instruction composing the loaded CUFunction "func" */
         const std::vector<Instr *> &instrs = nvbit_get_instrs(ctx, f);
 
@@ -316,7 +320,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                     int regtype = extractRegNo(tokens[start], regnum1);
                     if (regtype == 0) { // GPR reg
                         // CHECK If there is injection to be made
-                        if(flex_grip_event_counter <= 0){
+                        if(flex_grip_event_counter < 0){
                             break;
                         }
                         if (inst_index < managed_inj_info_array[inj_info_array_it].instructionIndex){
