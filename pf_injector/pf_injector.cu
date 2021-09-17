@@ -117,7 +117,7 @@ void parse_params(const std::string &filename, int i = 0) {
 }
 
 // Parse error injection site info from a file. This should be done on host side.
-void parse_flex_grip_file(const std::string &filename) {
+size_t parse_flex_grip_file(const std::string &filename) {
     std::ifstream input_file(filename);
     std::vector<inj_info_t> host_database_inj_info;
     if (input_file.good()) {
@@ -163,6 +163,7 @@ void parse_flex_grip_file(const std::string &filename) {
                                         host_database_inj_info.size() * sizeof(inj_info_t)));
         std::copy(host_database_inj_info.begin(), host_database_inj_info.end(), managed_inj_info_array);
         CUDA_SAFECALL(cudaDeviceSynchronize());
+        return host_database_inj_info.size();
     } else {
         FATAL("Not possible to open the file " + filename)
     }
@@ -231,12 +232,25 @@ void nvbit_at_init() {
     if (verbose) printf("nvbit_at_init:end\n");
 }
 
+uint32_t find_if_kernel_is_in_pf_database(std::string& kernel_name){
+    for(const auto& kt : kernel_vector){
+        std::string kernel_name_flexgrip;
+        uint32_t search_counter;
+        std::tie(kernel_name_flexgrip, search_counter) = kt;
+        if (kernel_name.find(kernel_name_flexgrip) != std::string::npos) {
+            return search_counter;
+        }
+    }
+    return 0;
+}
+
 void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 
 //    parse_params(injInputFilename);  // injParams are updated based on injection seed file
     parse_flex_grip_file(injInputFilename);
     update_verbose();
-
+    // Main flexgrip counter, to iterate over the main injection info
+    uint32_t inj_info_array_it = 0;
     /* Get related functions of the kernel (device function that can be
      * called by the kernel) */
     std::vector<CUfunction> related_functions = nvbit_get_related_functions(ctx, func);
@@ -253,6 +267,8 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
         }
 
         std::string kname = removeSpaces(nvbit_get_func_name(ctx, f));
+        // Find flexgrip counter
+        auto flex_grip_event_counter = find_if_kernel_is_in_pf_database(kname);
         /* Get the vector of instruction composing the loaded CUFunction "func" */
         const std::vector<Instr *> &instrs = nvbit_get_instrs(ctx, f);
 
@@ -260,6 +276,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
         assert(fout.good());
         fout << "Inspecting: " << kname << ";num_static_instrs: " << instrs.size() << ";maxregs: " << maxregs << "("
              << maxregs << ")" << std::endl;
+        size_t inst_index = 0;
         for (auto i: instrs) {
             std::string opcode = i->getOpcode();
             std::string instTypeStr = extractInstType(opcode);
@@ -270,8 +287,8 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
             /**
              * MODIFICATION FOR FLEXGRIP PF injection
              */
-            if ((uint32_t) instType == managed_inj_info_array[0].injInstType ||
-                managed_inj_info_array[0].injInstType == NUM_ISA_INSTRUCTIONS) {
+            if ((uint32_t) instType == managed_inj_info_array[inj_info_array_it].injInstType ||
+                managed_inj_info_array[inj_info_array_it].injInstType == NUM_ISA_INSTRUCTIONS) {
                 if (verbose) {
                     printf("instruction selected for instrumentation: ");
                     i->print();
@@ -298,6 +315,14 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                     int regnum1 = -1;
                     int regtype = extractRegNo(tokens[start], regnum1);
                     if (regtype == 0) { // GPR reg
+                        // CHECK If there is injection to be made
+                        if(flex_grip_event_counter <= 0){
+                            break;
+                        }
+                        if (inst_index < managed_inj_info_array[inj_info_array_it].instructionIndex){
+                            continue;
+                        }
+                        //---------------------------------------------------------------------------------------------
                         destGPRNum = regnum1;
                         numDestGPRs = (getOpGroupNum(instType) == G_FP64) ? 2 : 1;
 
@@ -309,7 +334,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                         }
 
                         nvbit_insert_call(i, "inject_error", IPOINT_AFTER);
-                        nvbit_add_call_arg_const_val64(i, (uint64_t) &managed_inj_info_array[0]);
+                        nvbit_add_call_arg_const_val64(i, (uint64_t) &managed_inj_info_array[inj_info_array_it]);
                         nvbit_add_call_arg_const_val64(i, (uint64_t) &verbose_device);
 
                         nvbit_add_call_arg_const_val32(i, destGPRNum); // destination GPR register number
@@ -322,10 +347,14 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 
                         nvbit_add_call_arg_const_val32(i, maxregs); // max regs used by the inst info
                         /**********************************************************************************************/
+                        // Check if there is more events to simulate
+                        flex_grip_event_counter--;
+                        inj_info_array_it++;
                     }
                     // If an instruction has two destination registers, not handled!! (TODO: Fix later)
                 }
             }
+            inst_index++;
         }
     }
 }

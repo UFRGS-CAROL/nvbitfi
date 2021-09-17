@@ -13,4 +13,4 @@ appcommand: >
 nvbitfipath: /home/fernando/NVBITFI/nvbit_release/tools/nvbitfi
 
 # Path to the csv database from flexgrip
-csvdatabase: "/home/fernando/NVBITFI/nvbit_release/tools/nvbitfi/pf_injector/flexgrip_files/lenet/lenet_flexgrip_database.csv"
+csvdatabase: "/home/fernando/temp/matteo_project/lenet_results/final_results.csv"

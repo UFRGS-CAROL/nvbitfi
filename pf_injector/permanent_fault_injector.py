@@ -6,7 +6,7 @@ import time
 import logging
 import pandas as pd
 import yaml
-from commom import execute_cmd
+from commom import execute_cmd, OPCODES
 
 
 def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd, app_name):
@@ -16,18 +16,23 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd, app_name):
     execute_fi = f"eval LD_PRELOAD={path_to_nvbitfi}/pf_injector/pf_injector.so {app_cmd}"
     logs_foler = f"logs/{app_name}"
     execute_cmd(f"mkdir -p {logs_foler}")
-
-    fault_site_df = error_df.groupby(["fault_location", "instruction", "LANEID", "warp_id", "SMID"])
+    error_df["opcode_id"] = error_df["instruction"].apply(OPCODES.index)
+    fault_site_df = error_df.groupby(["fault_location", "instruction", "LANEID", "SMID"])
     for fault_id, (name, group) in enumerate(fault_site_df):
-        # new_inj_info.injInstType,injLaneID,warpID,injSMID,faulty_out,golden_out
         # IF there is a useful fault to be injected
         if group.empty is False:
             pf_loc = re.sub(r"-*=*[ ]*\"*\[*]*[.txt]*", "", name[0])
-            thread_id = '_'.join(map(str, name[1:]))
-            # unique_id = f"{fault_id}_{pf_loc}_{thread_id}"
-            unique_id = f"{fault_id}_{thread_id}"
+            lane_warp_sm_ids = '_'.join(map(str, name[1:]))
+            unique_id = f"{fault_id}_{pf_loc}_{lane_warp_sm_ids}"
             # Save the nvbit input file
-            group.to_csv(nvbit_injection_info, sep=";", index=None, header=None)
+            kernel_groups = group.groupby("kernel")
+            for kn, kg in kernel_groups:
+                # ORDER IN THE NVBITFI
+                #             injInstType; injLaneID;warpID;    injSMID; injMask;instructionIndex
+                to_save = kg[["opcode_id", "LANEID", "warp_id", "SMID", "faulty_out", "instruction_index"]]
+                with open(nvbit_injection_info, mode='a') as fp:
+                    fp.write(f"{kn};{kg.shape[0]}\n")
+                    to_save.to_csv(fp, sep=";", index=None, header=None)
             # Execute the fault injection
             fault_output_file = f"fault_{unique_id}.txt"
             crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1", return_error_code=True)
