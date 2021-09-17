@@ -38,13 +38,14 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd, app_name):
                     to_save.to_csv(fp, sep=";", index=None, header=None)
             # Execute the fault injection
             fault_output_file = f"fault_{unique_id}.txt"
-            crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1")
+            execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1")
             # rename these files
             # nvbitfi-injection-info.txt  nvbitfi-injection-log-temp.txt and fault_output_file
             tmp_logs_names = output_logs + [fault_output_file]
             for mv_file in tmp_logs_names:
                 new_name = unique_id + "_" + mv_file
                 execute_cmd(f"mv {mv_file} {logs_foler}/{new_name}")
+            if fault_id > 10: break
 
 
 def main():

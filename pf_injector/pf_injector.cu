@@ -282,7 +282,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
         assert(fout.good());
         fout << "Inspecting: " << kname << ";num_static_instrs: " << instrs.size() << ";maxregs: " << maxregs << "("
              << maxregs << ")" << std::endl;
-        size_t inst_index = 0;
+//        size_t inst_index = 0;
         for (auto i: instrs) {
             std::string opcode = i->getOpcode();
             std::string instTypeStr = extractInstType(opcode);
@@ -322,9 +322,9 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                     int regtype = extractRegNo(tokens[start], regnum1);
                     if (regtype == 0) { // GPR reg
                         // CHECK If there is injection to be made
-                        if (inst_index < managed_inj_info_array[inj_info_array_it].instructionIndex){
-                            continue;
-                        }
+//                        if (inst_index < managed_inj_info_array[inj_info_array_it].instructionIndex){
+//                            continue;
+//                        }
                         //---------------------------------------------------------------------------------------------
                         destGPRNum = regnum1;
                         numDestGPRs = (getOpGroupNum(instType) == G_FP64) ? 2 : 1;
@@ -360,7 +360,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                     // If an instruction has two destination registers, not handled!! (TODO: Fix later)
                 }
             }
-            inst_index++;
+//            inst_index++;
         }
     }
 }
