@@ -53,8 +53,8 @@ inject_error(uint64_t piinfo, uint64_t pverbose_device, int destGPRNum, int regv
     if (DUMMY) {
         injAfterVal = injBeforeVal;
     } else {
-        injAfterVal = injBeforeVal ^ inj_info->injMask;
-        nvbit_write_reg(destGPRNum, int32_t(injAfterVal));
+//        injAfterVal = injBeforeVal ^ inj_info->injMask;
+        nvbit_write_reg(destGPRNum, int32_t(inj_info->injMask));
     }
     // updating counter/flag to check whether the error was injected
     if (verbose_device)
