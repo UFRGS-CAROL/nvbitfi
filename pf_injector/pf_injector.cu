@@ -51,6 +51,7 @@ pthread_mutex_t mutex;
 //__managed__ inj_info_t inj_info;
 
 __managed__ inj_info_t *managed_inj_info_array = nullptr;
+size_t inj_info_array_size = 0;
 
 // To inject for each kernel
 using kernel_tuple = std::tuple<std::string, uint32_t>;
@@ -117,7 +118,7 @@ void parse_params(const std::string &filename, int i = 0) {
 }
 
 // Parse error injection site info from a file. This should be done on host side.
-size_t parse_flex_grip_file(const std::string &filename) {
+void parse_flex_grip_file(const std::string &filename) {
     std::ifstream input_file(filename);
     std::vector<inj_info_t> host_database_inj_info;
     if (input_file.good()) {
@@ -165,7 +166,7 @@ size_t parse_flex_grip_file(const std::string &filename) {
                                         host_database_inj_info.size() * sizeof(inj_info_t)));
         std::copy(host_database_inj_info.begin(), host_database_inj_info.end(), managed_inj_info_array);
         CUDA_SAFECALL(cudaDeviceSynchronize());
-        return host_database_inj_info.size();
+        inj_info_array_size = host_database_inj_info.size();
     } else {
         FATAL("Not possible to open the file " + filename)
     }
@@ -234,8 +235,8 @@ void nvbit_at_init() {
     if (verbose) printf("nvbit_at_init:end\n");
 }
 
-uint32_t find_if_kernel_is_in_pf_database(std::string& kernel_name){
-    for(const auto& kt : kernel_vector){
+uint32_t find_if_kernel_is_in_pf_database(std::string &kernel_name) {
+    for (const auto &kt: kernel_vector) {
         std::string kernel_name_flexgrip;
         uint32_t search_counter;
         std::tie(kernel_name_flexgrip, search_counter) = kt;
@@ -272,7 +273,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
         // Find flexgrip counter
         auto flex_grip_event_counter = find_if_kernel_is_in_pf_database(kname);
         // if it is not the kernel continue
-        if(flex_grip_event_counter == 0){
+        if (flex_grip_event_counter == 0) {
             continue;
         }
         /* Get the vector of instruction composing the loaded CUFunction "func" */
@@ -351,7 +352,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                         nvbit_add_call_arg_const_val32(i, maxregs); // max regs used by the inst info
                         /**********************************************************************************************/
                         // Check if there is more events to simulate
-                        if(flex_grip_event_counter == 0){
+                        if (flex_grip_event_counter == 0) {
                             break;
                         }
                         flex_grip_event_counter--;
@@ -411,17 +412,19 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
                     num_ctas = p2->gridDimX * p2->gridDimY * p2->gridDimZ;
                 }
                 assert(fout.good());
-                fout << "Injection data; ";
-                fout << "index: " << kernel_id << ";";
-                fout << "kernel_name: " << kname << ";";
-                fout << "ctas: " << num_ctas << ";";
-                fout << "selected SM: " << managed_inj_info_array[0].injSMID << ";";
-                fout << "selected Lane: " << managed_inj_info_array[0].injLaneID << ";";
-                fout << "selected Warp: " << managed_inj_info_array[0].warpID << ";";
-                fout << "selected Mask: " << managed_inj_info_array[0].injMask << ";";
-                fout << "selected InstType: " << managed_inj_info_array[0].injInstType << ";";
-                fout << "injNumActivations: " << managed_inj_info_array[0].injNumActivations << std::endl;
-
+                for (size_t it = 0; it < inj_info_array_size; it++) {
+                    fout << "it:" << it << ";";
+                    fout << "Injection data;";
+                    fout << "index: " << kernel_id << ";";
+                    fout << "kernel_name: " << kname << ";";
+                    fout << "ctas: " << num_ctas << ";";
+                    fout << "selected SM: " << managed_inj_info_array[it].injSMID << ";";
+                    fout << "selected Lane: " << managed_inj_info_array[it].injLaneID << ";";
+                    fout << "selected Warp: " << managed_inj_info_array[it].warpID << ";";
+                    fout << "selected Mask: " << managed_inj_info_array[it].injMask << ";";
+                    fout << "selected InstType: " << managed_inj_info_array[it].injInstType << ";";
+                    fout << "injNumActivations: " << managed_inj_info_array[it].injNumActivations << std::endl;
+                }
                 if (cudaSuccess != le) {
                     assert(fout.good());
                     fout << "ERROR FAIL in kernel execution (" << cudaGetErrorString(le) << "); " << std::endl;
