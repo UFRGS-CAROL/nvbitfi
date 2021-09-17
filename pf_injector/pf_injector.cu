@@ -320,9 +320,6 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                     int regtype = extractRegNo(tokens[start], regnum1);
                     if (regtype == 0) { // GPR reg
                         // CHECK If there is injection to be made
-                        if(flex_grip_event_counter < 0){
-                            break;
-                        }
                         if (inst_index < managed_inj_info_array[inj_info_array_it].instructionIndex){
                             continue;
                         }
@@ -352,6 +349,9 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                         nvbit_add_call_arg_const_val32(i, maxregs); // max regs used by the inst info
                         /**********************************************************************************************/
                         // Check if there is more events to simulate
+                        if(flex_grip_event_counter == 0){
+                            break;
+                        }
                         flex_grip_event_counter--;
                         inj_info_array_it++;
                     }
