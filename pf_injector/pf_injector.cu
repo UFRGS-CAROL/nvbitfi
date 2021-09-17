@@ -148,6 +148,8 @@ size_t parse_flex_grip_file(const std::string &filename) {
                 kernel_vector.push_back(t);
             } else {
                 inj_info_t new_inj_info;
+                new_inj_info.injNumActivations = 0;
+                new_inj_info.errorInjected = false;
                 new_inj_info.injInstType = std::stoul(row[0]);
                 new_inj_info.injLaneID = std::stoul(row[1]);
                 new_inj_info.warpID = std::stoul(row[2]);
