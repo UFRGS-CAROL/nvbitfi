@@ -38,8 +38,7 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd, app_name):
                     to_save.to_csv(fp, sep=";", index=None, header=None)
             # Execute the fault injection
             fault_output_file = f"fault_{unique_id}.txt"
-            crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1", return_error_code=True)
-            assert crash_code != 0, logging.exception(f"Crash code at fault injection {crash_code}")
+            crash_code = execute_cmd(cmd=f"{execute_fi} > {fault_output_file} 2>&1")
             # rename these files
             # nvbitfi-injection-info.txt  nvbitfi-injection-log-temp.txt and fault_output_file
             tmp_logs_names = output_logs + [fault_output_file]
