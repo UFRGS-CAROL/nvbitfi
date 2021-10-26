@@ -265,7 +265,6 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
 
     /* add kernel itself to the related function vector */
     related_functions.push_back(func);
-
     /* iterate on function */
     for (auto f: related_functions) {
         /* "recording" function was instrumented, if set insertion failed
