@@ -51,7 +51,6 @@ def main():
     """ Main function """
     logging.basicConfig(level=logging.DEBUG, datefmt='%m/%d/%Y %H:%M:%S',
                         format='[%(asctime)s][%(levelname)s][%(filename)s:%(lineno)d] %(message)s')
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--appcfg", default="./example.yaml",
                         help="A YAML configuration file that contains the app directory and execute cmd. See example")
