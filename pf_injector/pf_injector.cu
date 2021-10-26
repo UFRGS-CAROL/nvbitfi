@@ -236,6 +236,11 @@ void nvbit_at_init() {
 }
 
 uint32_t find_if_kernel_is_in_pf_database(std::string &kernel_name) {
+    /**
+     * Basically this function search the vector that I created
+     * for kernels that are the same for the kernel that it is being
+     * instrumented
+     */
     for (const auto &kt: kernel_vector) {
         std::string kernel_name_flexgrip;
         uint32_t search_counter;
@@ -283,7 +288,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
         assert(fout.good());
         fout << "Inspecting: " << kname << ";num_static_instrs: " << instrs.size() << ";maxregs: " << maxregs << "("
              << maxregs << ")" << std::endl;
-//        size_t inst_index = 0;
+        size_t inst_index = 0;
         for (auto i: instrs) {
             std::string opcode = i->getOpcode();
             std::string instTypeStr = extractInstType(opcode);
@@ -323,9 +328,9 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                     int regtype = extractRegNo(tokens[start], regnum1);
                     if (regtype == 0) { // GPR reg
                         // CHECK If there is injection to be made
-//                        if (inst_index < managed_inj_info_array[inj_info_array_it].instructionIndex){
-//                            continue;
-//                        }
+                        if (inst_index != managed_inj_info_array[inj_info_array_it].instructionIndex){
+                            continue;
+                        }
                         //---------------------------------------------------------------------------------------------
                         destGPRNum = regnum1;
                         numDestGPRs = (getOpGroupNum(instType) == G_FP64) ? 2 : 1;
@@ -361,7 +366,7 @@ void instrument_function_if_needed(CUcontext ctx, CUfunction func) {
                     // If an instruction has two destination registers, not handled!! (TODO: Fix later)
                 }
             }
-//            inst_index++;
+            inst_index++;
         }
     }
 }
