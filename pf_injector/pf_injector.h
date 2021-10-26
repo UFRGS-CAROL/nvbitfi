@@ -25,6 +25,7 @@ typedef struct {
     uint32_t injMask; // injection mask
     uint32_t injInstType; // instruction type
     uint32_t warpID;
+    // FlexGrip index
     uint32_t instructionIndex;
     // updated during/after error injection
     uint64_t injNumActivations;
