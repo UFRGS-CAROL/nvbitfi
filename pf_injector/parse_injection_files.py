@@ -55,11 +55,11 @@ def extract_output(output):
 def parse_lenet_output():
     tar_files = glob.glob("logs/lenet/*.tar.gz")
     tmp_dir = "/tmp/sw_pf"
-    gold_path = f"logs/gold_output.txt"
+    prob_gold, numb_gold = extract_output("logs/gold_output.txt")
+
     execute_cmd(f"mkdir -p {tmp_dir}")
     cwd = os.getcwd()
     os.chdir(tmp_dir)
-    prob_gold, numb_gold = extract_output(gold_path)
     output_folder = tmp_dir + "/tmptxts"
     fault_list = list()
     for file in tar_files:
