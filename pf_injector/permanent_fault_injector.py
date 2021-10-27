@@ -25,8 +25,8 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd, app_name):
         # IF there is a useful fault to be injected
         if group.empty is False:
             pf_loc = re.sub(r"-*=*[ ]*\"*\[*]*[.txt]*", "", name[0])
-            lane_warp_sm_ids = '_'.join(map(str, name[1:]))
-            unique_id = f"{fault_id}_{pf_loc}_{lane_warp_sm_ids}"
+            lane_sm_ids = '_'.join(map(str, name[1:]))
+            unique_id = f"{fault_id}_{pf_loc}_{lane_sm_ids}"
             # Save the nvbit input file
             kernel_groups = group.groupby("kernel")
             for kn, kg in kernel_groups:
@@ -42,9 +42,10 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd, app_name):
             # rename these files
             # nvbitfi-injection-info.txt  nvbitfi-injection-log-temp.txt and fault_output_file
             tmp_logs_names = output_logs + [fault_output_file]
-            for mv_file in tmp_logs_names:
-                new_name = unique_id + "_" + mv_file
-                execute_cmd(f"mv {mv_file} {logs_foler}/{new_name}")
+            mv_files = " ".join(tmp_logs_names)
+            tar_file = f"{unique_id}.tar.gz"
+            execute_cmd(f"tar czf {logs_foler}/{tar_file} {mv_files}")
+            execute_cmd(f"rm {mv_files}")
 
 
 def main():
