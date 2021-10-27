@@ -56,10 +56,8 @@ def parse_lenet_output():
     tar_files = glob.glob("logs/lenet/*.tar.gz")
     tmp_dir = "/tmp/sw_pf"
     prob_gold, numb_gold = extract_output("logs/gold_output.txt")
-
     execute_cmd(f"mkdir -p {tmp_dir}")
-    cwd = os.getcwd()
-    os.chdir(tmp_dir)
+
     output_folder = tmp_dir + "/tmptxts"
     fault_list = list()
     for file in tar_files:
@@ -90,7 +88,7 @@ def parse_lenet_output():
             'lane_id': lane_id, 'sm_id': sm_id
         })
         execute_cmd(f"rm {output_folder}/*")
-    os.chdir(cwd)
+
     return pd.DataFrame(fault_list)
 
 
