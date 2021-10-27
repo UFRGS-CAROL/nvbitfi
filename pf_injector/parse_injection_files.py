@@ -59,9 +59,10 @@ def parse_lenet_output():
     execute_cmd(f"mkdir -p {tmp_dir}")
 
     output_folder = tmp_dir + "/tmptxts"
+    execute_cmd(f"mkdir {output_folder}")
     fault_list = list()
     for file in tar_files:
-        execute_cmd(f"tar xzf {file} -C {output_folder}")
+        execute_cmd(f"tar xzf {file} -C {output_folder}/")
         #               fault_0_sa0_DUT_U2086_B_FADD_0_0.txt
         tar_pattern = r"fault_(\d+)_(\S+)_(\S+)_(\d+)_(\d+).tar.gz"
         m_fault = re.match(tar_pattern, file)
