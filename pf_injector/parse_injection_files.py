@@ -59,7 +59,7 @@ def parse_lenet_output():
     execute_cmd(f"mkdir -p {tmp_dir}")
 
     output_folder = tmp_dir + "/tmptxts"
-    execute_cmd(f"mkdir {output_folder}")
+    execute_cmd(f"mkdir -p {output_folder}")
     fault_list = list()
     for file in tar_files:
         execute_cmd(f"tar xzf {file} -C {output_folder}/")
