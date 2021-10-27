@@ -25,8 +25,8 @@ def inject_permanent_faults(error_df, path_to_nvbitfi, app_cmd, app_name):
         # IF there is a useful fault to be injected
         if group.empty is False:
             pf_loc = re.sub(r"-*=*[ ]*\"*\[*]*[.txt]*", "", name[0])
-            lane_sm_ids = '_'.join(map(str, name[1:]))
-            unique_id = f"{fault_id}_{pf_loc}_{lane_sm_ids}"
+            opcode_lane_sm = '_'.join(map(str, name[1:]))
+            unique_id = f"{fault_id}_{pf_loc}_{opcode_lane_sm}"
             # Save the nvbit input file
             kernel_groups = group.groupby("kernel")
             for kn, kg in kernel_groups:

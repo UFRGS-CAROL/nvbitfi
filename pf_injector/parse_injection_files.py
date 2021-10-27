@@ -70,8 +70,8 @@ def parse_lenet_output():
         fault_id, fault_location, opcode, lane_id, sm_id = m_fault.groups()
         # IF there is a useful fault to be injected
         pf_loc = re.sub(r"-*=*[ ]*\"*\[*]*[.txt]*", "", fault_location)
-        lane_sm_ids = '_'.join([lane_id, sm_id])
-        unique_id = f"{fault_id}_{pf_loc}_{lane_sm_ids}"
+        opcode_lane_sm = '_'.join([opcode, lane_id, sm_id])
+        unique_id = f"{fault_id}_{pf_loc}_{opcode_lane_sm}"
         # Save the nvbit input file
         fault_output_file = f"{output_folder}/fault_{unique_id}.txt"
         prob_list, numb_list = extract_output(fault_output_file)
