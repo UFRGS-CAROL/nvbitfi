@@ -55,7 +55,7 @@ def extract_output(output):
 def parse_lenet_output():
     tar_files = glob.glob("logs/lenet/*.tar.gz")
     tmp_dir = "/tmp/sw_pf"
-    gold_path = f"{tmp_dir}/logs/gold_output.txt"
+    gold_path = f"logs/gold_output.txt"
     execute_cmd(f"mkdir -p {tmp_dir}")
     cwd = os.getcwd()
     os.chdir(tmp_dir)
