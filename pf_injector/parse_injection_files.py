@@ -64,7 +64,7 @@ def parse_lenet_output():
     for file in tar_files:
         execute_cmd(f"tar xzf {file} -C {output_folder}/")
         #               fault_0_sa0_DUT_U2086_B_FADD_0_0.txt
-        tar_pattern = r"fault_(\d+)_(\S+)_(\S+)_(\d+)_(\d+).tar.gz"
+        tar_pattern = r"(\d+)_(\S+)_(\S+)_(\d+)_(\d+).tar.gz"
         m_fault = re.match(tar_pattern, file)
         # fault_19_sa1_op0_in20_4_27_6_0.tar.gz
         fault_id, fault_location, opcode, lane_id, sm_id = m_fault.groups()
